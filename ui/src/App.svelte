@@ -1,10 +1,12 @@
 <script>
 	import './app.scss';
 
-	export let component;
-	export let props;
+	const {
+		/** @type {any} */
+		page,
+	} = $props();
 </script>
 
 <main>
-	<svelte:component this={component} {...props} />
+	<svelte:component this={$page.component} {...$page.props} />
 </main>

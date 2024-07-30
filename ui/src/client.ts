@@ -3,6 +3,8 @@ import * as routes from './pages/routes';
 import { handleRoute } from './main';
 import { SsrCache } from 'chuchi/ssr';
 import { Router } from 'chuchi';
+import { hydrate, mount, tick } from 'svelte';
+import { Writable } from 'chuchi/stores';
 
 async function main() {
 	const cache = new SsrCache();
@@ -13,24 +15,27 @@ async function main() {
 
 	routes.register(router);
 
-	let app: App | null;
+	let hydrated = false;
+	let pageStore = new Writable<any>(null);
 
 	router.onRoute(async (req, route, routing) => {
-		const { props } = await handleRoute(req, route, cache);
+		const { page } = await handleRoute(req, route, cache);
 
 		if (await routing.dataReady()) return;
 
-		if (!app) {
-			app = new App({
+		pageStore.set(page);
+
+		if (!hydrated) {
+			hydrated = true;
+			hydrate(App, {
 				target: document.body,
 				// @ts-ignore
-				props,
-				hydrate: true,
+				props: { page: pageStore },
 				context,
 			});
-		} else {
-			app.$set(props);
 		}
+
+		await tick();
 
 		routing.domReady();
 	});

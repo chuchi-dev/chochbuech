@@ -1,8 +1,10 @@
+import { render as renderComponent } from 'svelte/server';
 import App from './App.svelte';
 import * as routes from './pages/routes';
 import { handleRoute } from './main';
 import { SsrCache, SsrComponents } from 'chuchi/ssr';
 import { Router } from 'chuchi';
+import { Writable } from 'chuchi/stores';
 
 // opt: { method, uri, ?ssrManifest }
 // returns: { status, body, head }
@@ -15,15 +17,21 @@ export async function render(req: any, opt: any) {
 	req = router.initServer('http://' + req.headers.host + req.uri);
 
 	const route = router.route(req);
-	const { status, props } = await handleRoute(req, route, cache);
+	const { status, page } = await handleRoute(req, route, cache);
 
 	const ssrComponents = new SsrComponents();
 	const context = new Map();
 	context.set('router', router);
 	ssrComponents.addToContext(context);
 
-	// @ts-ignore
-	let { html, head } = App.render(props, { context });
+	const pageStore = new Writable(page);
+
+	let { html, head } = renderComponent(App, {
+		props: {
+			page: pageStore,
+		},
+		context,
+	});
 
 	head += ssrComponents.toHead(opt?.ssrManifest ?? {});
 	head += cache.toHead();

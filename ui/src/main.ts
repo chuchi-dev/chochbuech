@@ -22,7 +22,7 @@ export async function handleRoute(
 			console.log('error', e);
 			return {
 				status: 500,
-				props: {
+				page: {
 					component: routes.NotFound,
 					props: {},
 				},
@@ -31,7 +31,7 @@ export async function handleRoute(
 
 		return {
 			status: 200,
-			props: {
+			page: {
 				component: comp.default,
 				props: pageProps,
 			},
@@ -40,7 +40,7 @@ export async function handleRoute(
 
 	return {
 		status: 404,
-		props: {
+		page: {
 			component: routes.NotFound,
 			props: {},
 		},
