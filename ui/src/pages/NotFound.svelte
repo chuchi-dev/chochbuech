@@ -1,4 +1,1 @@
-<script lang="ts">
-</script>
-
-404
+<h1>Not Found</h1>
