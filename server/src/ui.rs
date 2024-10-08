@@ -8,15 +8,7 @@ use chuchi_ssr::JsServer;
 
 use serde::{Deserialize, Serialize};
 
-#[get("/")]
-async fn index_route(
-	req: &mut Request,
-	ssr: &JsServer,
-) -> Result<Response, Error> {
-	ssr.request(req).await.map_err(Error::from_server_error)
-}
-
-#[get("/{*remaining}")]
+#[get("/{*?remaining}")]
 async fn all(
 	req: &mut Request,
 	ssr: &JsServer,
@@ -78,7 +70,6 @@ pub fn routes(dist_dir: String, server: &mut Chuchi) -> JsServer {
 	let public_dir = Path::new(&dist_dir).join("public");
 	server.add_resource(UiPublicDir(public_dir));
 	server.add_resource(UiCaching(Caching::default()));
-	server.add_route(index_route);
 	server.add_route(all);
 
 	js_server

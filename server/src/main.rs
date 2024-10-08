@@ -1,8 +1,11 @@
 mod api;
 mod cors;
+mod db;
+mod error;
 mod ui;
+mod users;
 
-use std::fs;
+use std::{fs, path::Path};
 
 use chuchi::Resource;
 use clap::Parser;
@@ -24,7 +27,7 @@ struct Config {
 	tracing: Option<String>,
 }
 
-const DEFAULT_TRACING: &str = "server=info,chuchi=info,warning";
+const DEFAULT_TRACING: &str = "server=info,chuchi=info,warn";
 
 #[cfg(debug_assertions)]
 const UI_DIR: &str = "../ui/dist";
@@ -58,8 +61,13 @@ async fn main() {
 	server.add_resource(cfg);
 
 	api::routes(&mut server);
-	info!("using ui dir {UI_DIR}");
-	let js_server = ui::routes(UI_DIR.to_string(), &mut server);
+	let js_server = if Path::new(UI_DIR).exists() {
+		info!("using ui dir {UI_DIR}");
+		Some(ui::routes(UI_DIR.to_string(), &mut server))
+	} else {
+		info!("ui dir {UI_DIR} does not exist, not serving ui");
+		None
+	};
 
 	if cfg!(debug_assertions) {
 		info!("adding cors headers catcher");
@@ -67,6 +75,8 @@ async fn main() {
 	}
 
 	let server = server.build().await.unwrap();
-	js_server.route_internally(server.shared()).await;
+	if let Some(js_server) = js_server {
+		js_server.route_internally(server.shared()).await;
+	}
 	server.run().await.unwrap();
 }

@@ -2,12 +2,15 @@
 	import './app.scss';
 	import Footer from './layout/Footer.svelte';
 	import Header from './layout/Header.svelte';
+	import Toasts from './layout/Toasts.svelte';
 
 	const {
 		/** @type {any} */
 		page,
 	} = $props();
 </script>
+
+<Toasts />
 
 <div id="app">
 	<Header />

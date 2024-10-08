@@ -5,5 +5,5 @@ export { NotFound };
 
 export function register(router: Router) {
 	router.register('/', () => import('./Home.svelte'));
-	router.register('/sub-page', () => import('./SubPage.svelte'));
+	router.register('/signin', () => import('./SignIn.svelte'));
 }

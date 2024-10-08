@@ -1,7 +1,5 @@
 <script>
 	let open = $state(false);
-
-	open = true;
 </script>
 
 <div class="placeholder"></div>
