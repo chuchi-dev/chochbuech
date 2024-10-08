@@ -1,5 +1,21 @@
+@import './sass/fonts';
+@import './sass/btn';
+
 :root {
-	--bg-dark-400: hsl(212, 8%, 7%);
+	--white: #f6f6f4;
+
+	--blue: #3c67c0;
+	--blue-15: #dae0ed;
+	--blue-20: #d1dae9;
+
+	--blue-50: #99afda;
+
+	--font-primary: 'Bagoss', 'Roboto', sans-serif;
+	--font-secondary: 'PP Editorial Old', 'Times New Roman', serif;
+
+	--max-width-narrow: 68rem;
+	--max-width: 92rem;
+	--sx-body: 1.25rem;
 }
 
 * {
@@ -12,5 +28,27 @@
 }
 
 html {
-	font-family: 'Roboto', serif;
+	font-family: var(--font-primary);
+	// 16px, desktop 18
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+body {
+	background-color: var(--white);
+	color: var(--blue);
+}
+
+.wrap {
+	max-width: calc(var(--max-width) + 2 * var(--sx-body));
+	padding-left: var(--sx-body);
+	padding-right: var(--sx-body);
+
+	&.narrow {
+		max-width: calc(var(--max-width-narrow) + 2 * var(--sx-body));
+	}
+
+	&.wide {
+		max-width: none;
+	}
 }

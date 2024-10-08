@@ -1,0 +1,43 @@
+.btn {
+	position: relative;
+	padding: 0.75em 1.25em;
+	border: 1px solid var(--blue);
+	border-radius: 5em;
+	text-decoration: none;
+	appearance: none;
+	box-shadow: 0;
+	background-color: var(--blue);
+	color: var(--white);
+
+	&::after {
+		content: '';
+		position: absolute;
+		display: block;
+		top: -0.5em;
+		left: -0.5em;
+		right: -0.5em;
+		bottom: -0.5em;
+		border: 1px solid var(--blue-20);
+		border-radius: 6em;
+	}
+
+	&.small {
+		padding: 0.5em 1em;
+
+		&::after {
+			top: -0.35em;
+			left: -0.35em;
+			right: -0.35em;
+			bottom: -0.35em;
+		}
+	}
+
+	&.secondary {
+		background-color: transparent;
+		color: var(--blue);
+	}
+}
+
+button.btn {
+	cursor: pointer;
+}
