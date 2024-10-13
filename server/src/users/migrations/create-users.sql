@@ -14,11 +14,11 @@ CREATE INDEX idx_users_email ON users(email);
 -- Create the Sessions table
 CREATE TABLE user_sessions (
     token TEXT PRIMARY KEY,
-    timeout TIMESTAMP NOT NULL,
+    timeout BIGINT NOT NULL,
     user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     created_on TIMESTAMP NOT NULL,
     oauth_token TEXT
 );
 
 -- Indexes for better performance
-CREATE INDEX idx_sessions_user_id ON Sessions(user_id);
+CREATE INDEX idx_sessions_user_id ON user_sessions(user_id);

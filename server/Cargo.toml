@@ -16,4 +16,5 @@ toml = "0.8"
 chuchi-postgres = { version = "0.1.4", features = ["chuchi"] }
 async-trait = "0.1.81"
 email_address = "0.2.9"
-chuchi-crypto = { version = "0.1.0", features = ["b64", "serde"] }
+chuchi-crypto = { version = "0.1.1", features = ["b64", "serde", "postgres"] }
+bcrypt = "0.15.1"

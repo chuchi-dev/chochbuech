@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use chuchi::impl_res_extractor;
 use chuchi_postgres::{
+	db::Conn,
 	time::{DateTime, Timeout},
 	Result, UniqueId,
 };
@@ -14,6 +15,18 @@ pub struct User {
 	pub email: String,
 	pub auth: Auth,
 	pub created_on: DateTime,
+}
+
+impl User {
+	pub fn new(name: String, email: String, auth: Auth) -> Self {
+		Self {
+			id: UniqueId::new(),
+			name,
+			email,
+			auth,
+			created_on: DateTime::now(),
+		}
+	}
 }
 
 pub type Token = chuchi_crypto::token::Token<32>;
@@ -120,17 +133,28 @@ impl From<Session> for ShortSession {
 	}
 }
 
-pub type Users = Box<dyn UsersTrait + Send + Sync>;
+pub type Users = Box<dyn UsersBuilderTrait + Send + Sync>;
+pub type UsersWithConn<'a> = Box<dyn UsersTrait + Send + Sync + 'a>;
 
 impl_res_extractor!(Users);
 
+pub trait UsersBuilderTrait {
+	fn with_conn<'a>(&'a self, conn: Conn<'a>) -> UsersWithConn<'a>;
+}
+
 #[async_trait::async_trait]
 pub trait UsersTrait {
+	async fn by_id(&self, id: &UniqueId) -> Result<Option<User>>;
+
 	async fn by_email(&self, email: &str) -> Result<Option<User>>;
+
+	async fn create(&self, user: &User) -> Result<()>;
 
 	async fn new_session(
 		&self,
 		user_id: &UniqueId,
 		token: Option<String>,
 	) -> Result<Session>;
+
+	async fn session_by_token(&self, token: &Token) -> Result<Option<Session>>;
 }

@@ -1,9 +1,14 @@
+use std::error::Error as StdError;
 use std::fmt;
 
 use chuchi_postgres::database::DatabaseError;
 use serde::{Deserialize, Serialize};
 
-use chuchi::api::error::{self, Error as ApiError, StatusCode};
+use chuchi::{
+	api::error::{self, Error as ApiError, StatusCode},
+	error::{ClientErrorKind, ErrorKind, ServerErrorKind},
+	extractor::ExtractorError,
+};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -38,6 +43,24 @@ impl error::ApiError for Error {
 			Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
 			Self::Request(_) => StatusCode::BAD_REQUEST,
 		}
+	}
+}
+
+impl ExtractorError for Error {
+	fn error_kind(&self) -> ErrorKind {
+		match self {
+			Self::LoginIncorrect
+			| Self::MissingSessionToken
+			| Self::InvalidSessionToken
+			| Self::InvalidUser => ClientErrorKind::Forbidden.into(),
+			Self::NotFound => ClientErrorKind::NotFound.into(),
+			Self::Internal(_) => ServerErrorKind::InternalServerError.into(),
+			Self::Request(_) => ClientErrorKind::BadRequest.into(),
+		}
+	}
+
+	fn into_std(self) -> Box<dyn StdError + Send + Sync> {
+		Box::new(self)
 	}
 }
 

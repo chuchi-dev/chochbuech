@@ -1,13 +1,11 @@
-<script>
+<script lang="ts">
+	import { Writable } from 'chuchi/stores';
 	import './app.scss';
 	import Footer from './layout/Footer.svelte';
 	import Header from './layout/Header.svelte';
 	import Toasts from './layout/Toasts.svelte';
 
-	const {
-		/** @type {any} */
-		page,
-	} = $props();
+	const { page }: { page: Writable<any> } = $props();
 </script>
 
 <Toasts />

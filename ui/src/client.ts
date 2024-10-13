@@ -5,21 +5,43 @@ import { SsrCache } from 'chuchi/ssr';
 import { Router } from 'chuchi';
 import { hydrate, mount, tick } from 'svelte';
 import { Writable } from 'chuchi/stores';
+import { ClientCookies } from 'chuchi/cookies';
+import Session from './lib/Session';
+import LoadProps from './lib/LoadProps';
 
 async function main() {
 	const cache = new SsrCache();
 	const router = new Router();
+	const cookies = new ClientCookies();
 
 	const context = new Map();
 	context.set('router', router);
+	context.set('cookies', cookies);
 
 	routes.register(router);
+
+	const session = await Session.init(cache, cookies);
+	context.set('session', session);
 
 	let hydrated = false;
 	let pageStore = new Writable<any>(null);
 
 	router.onRoute(async (req, route, routing) => {
-		const { page } = await handleRoute(req, route, cache);
+		const loadProps = new LoadProps({
+			router,
+			route,
+			req,
+			cookies,
+			cache,
+			session,
+		});
+		const { page, redirect } = await handleRoute(req, route, loadProps);
+
+		if (redirect) {
+			// todo handle the request?
+			router.open(redirect);
+			return;
+		}
 
 		if (await routing.dataReady()) return;
 

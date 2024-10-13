@@ -1,4 +1,5 @@
 use chuchi::api::{Method, Request};
+use chuchi_crypto::token::Token;
 use email_address::EmailAddress;
 use serde::{Deserialize, Serialize};
 

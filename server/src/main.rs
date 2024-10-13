@@ -1,6 +1,7 @@
+#[macro_use]
+mod utils;
 mod api;
 mod cors;
-mod db;
 mod error;
 mod ui;
 mod users;
@@ -8,9 +9,11 @@ mod users;
 use std::{fs, path::Path};
 
 use chuchi::Resource;
+use chuchi_postgres::{db::Db, Database};
 use clap::Parser;
 use serde::Deserialize;
 use tracing::info;
+use users::data::{Auth, User, UsersBuilderTrait};
 
 #[derive(Debug, Parser)]
 #[command(version)]
@@ -19,12 +22,35 @@ struct Args {
 	tracing: Option<String>,
 	#[arg(long, default_value = "./config.toml")]
 	config: String,
+	#[command(subcommand)]
+	subcmd: Option<SubCommand>,
+}
+
+#[derive(Debug, Parser)]
+enum SubCommand {
+	CreateUser(CreateUser),
+}
+
+#[derive(Debug, Parser)]
+struct CreateUser {
+	email: String,
+	name: String,
+	password: String,
 }
 
 #[derive(Debug, Clone, Deserialize, Resource)]
 #[serde(rename_all = "kebab-case")]
 struct Config {
 	tracing: Option<String>,
+	database: DbConf,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct DbConf {
+	pub host: String,
+	pub name: String,
+	pub user: String,
+	pub password: String,
 }
 
 const DEFAULT_TRACING: &str = "server=info,chuchi=info,warn";
@@ -54,13 +80,50 @@ async fn main() {
 		.with_env_filter(tracing_cfg)
 		.init();
 
+	let db_cfg = &cfg.database;
+	let database = Database::with_host(
+		&db_cfg.host,
+		&db_cfg.name,
+		&db_cfg.user,
+		&db_cfg.password,
+	)
+	.await
+	.unwrap();
+	let db = Db::from(database.clone());
+	let conn = db.get().await.unwrap();
+
+	let users = users::database::UsersBuilder::new(&database).await;
+
+	match args.subcmd {
+		Some(SubCommand::CreateUser(CreateUser {
+			email,
+			name,
+			password,
+		})) => {
+			let user = User::new(
+				name,
+				email,
+				Auth::Password(
+					bcrypt::hash(password, bcrypt::DEFAULT_COST).unwrap(),
+				),
+			);
+			users.with_conn(conn.conn()).create(&user).await.unwrap();
+			eprintln!("user created {user:?}");
+			return;
+		}
+		None => {}
+	}
+
 	let mut server = chuchi::build("0.0.0.0:4986")
 		.await
 		.expect("Address could not be parsed");
 
 	server.add_resource(cfg);
+	server.add_resource(db);
+	server.add_resource::<users::data::Users>(Box::new(users));
 
 	api::routes(&mut server);
+	users::routes::routes(&mut server);
 	let js_server = if Path::new(UI_DIR).exists() {
 		info!("using ui dir {UI_DIR}");
 		Some(ui::routes(UI_DIR.to_string(), &mut server))

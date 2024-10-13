@@ -1,17 +1,36 @@
 <script>
+	import { login } from '@/api/users';
 	import { toast } from '@/layout/Toasts.svelte';
+	import { getSession } from '@/lib/Session';
+	import { timeout } from 'chuchi-utils';
+
+	const session = getSession();
 
 	let email = $state('');
 	let password = $state('');
 
-	function onsubmit(e) {
+	async function onsubmit(e) {
 		e.preventDefault();
 		console.log('submit');
 
-		toast({
+		const ref = toast({
 			message: 'Signing in...',
 			status: 'success',
 		});
+
+		try {
+			const auth = await login(email, password);
+			session.setAuthed(auth);
+		} catch (e) {
+			ref.update({ message: e.message, status: 'error' });
+			return;
+		}
+
+		ref.update({ message: 'Signed in!', status: 'success' });
+
+		setTimeout(() => {
+			ref.remove();
+		}, 3000);
 	}
 </script>
 

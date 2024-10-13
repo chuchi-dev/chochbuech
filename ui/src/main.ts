@@ -1,23 +1,45 @@
-import type { Request, Route } from 'chuchi';
+import type { Request, Route, Router } from 'chuchi';
 import * as routes from './pages/routes';
 import type { SsrCache } from 'chuchi/ssr';
+import { getContext } from 'svelte';
+import type { Cookies } from 'chuchi/cookies';
+import type LoadProps from './lib/LoadProps';
 
-const ssr = import.meta.env.SSR;
+export function getRouter(): Router {
+	return getContext('router');
+}
 
-// should return { status, props }
+export function getCookies(): Cookies {
+	return getContext('cookies');
+}
+
+export type RouteResponse = {
+	status: number;
+	page?: any;
+	redirect?: string;
+};
+
+// should return { status, props,  }
 export async function handleRoute(
 	req: Request,
 	route: Route | null,
-	cache: SsrCache,
-) {
+	loadProps: LoadProps,
+): Promise<RouteResponse> {
 	if (route) {
 		let comp, pageProps;
 		try {
 			comp = await route.load(req);
 
 			if (typeof comp.loadProps === 'function')
-				pageProps = await comp.loadProps(route.toProps(req), cache);
+				pageProps = await comp.loadProps(route.toProps(req), loadProps);
 			else pageProps = {};
+
+			if (loadProps.redirect) {
+				return {
+					status: loadProps.redirect.status,
+					redirect: loadProps.redirect.url,
+				};
+			}
 		} catch (e) {
 			console.log('error', e);
 			return {
