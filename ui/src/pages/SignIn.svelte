@@ -1,10 +1,21 @@
+<script module>
+	export async function loadProps(props, lp) {
+		if (lp.session.isLoggedIn()) {
+			lp.setRedirect('/me');
+		}
+	}
+</script>
+
 <script>
 	import { login } from '@/api/users';
 	import { toast } from '@/layout/Toasts.svelte';
 	import { getSession } from '@/lib/Session';
+	import { getRouter } from '@/main';
 	import { timeout } from 'chuchi-utils';
 
 	const session = getSession();
+	const router = getRouter();
+	const req = router.currentRequest;
 
 	let email = $state('');
 	let password = $state('');
@@ -21,7 +32,12 @@
 		try {
 			const auth = await login(email, password);
 			session.setAuthed(auth);
+
+			// nows lets either redirect to url or to /me
+			const url = $req?.search.get('url') ?? '/me';
+			router.open(url);
 		} catch (e) {
+			console.error(e);
 			ref.update({ message: e.message, status: 'error' });
 			return;
 		}

@@ -30,6 +30,17 @@ export async function handleRoute(
 		try {
 			comp = await route.load(req);
 
+			if (comp?.requiresLogin && !loadProps.session.isLoggedIn()) {
+				return {
+					status: 302,
+					redirect:
+						'/signin?' +
+						new URLSearchParams([
+							['url', req.url.pathname],
+						]).toString(),
+				};
+			}
+
 			if (typeof comp.loadProps === 'function')
 				pageProps = await comp.loadProps(route.toProps(req), loadProps);
 			else pageProps = {};

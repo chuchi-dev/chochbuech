@@ -1,5 +1,15 @@
 <script>
+	import { getSession } from '@/lib/Session';
+	import { getRouter } from '@/main';
+
+	const session = getSession();
+	const req = getRouter().currentRequest;
+
 	let open = $state(false);
+
+	$effect(() => {
+		open = !$req;
+	});
 </script>
 
 <div class="placeholder"></div>
@@ -26,13 +36,25 @@
 
 		<div class="right mob">
 			<a href="/search" class="desk">Search</a>
-			<a href="/signin" class="signin btn secondary">Sign In</a>
+			{#if !$session.isLoggedIn()}
+				<a href="/signin" class="signin btn secondary">Sign In</a>
+			{:else}
+				<a href="/me" class="signin">
+					{$session.shortUser?.name ?? ''}
+				</a>
+			{/if}
 			<a href="/submit" class="submit btn">Submit Recipe</a>
 		</div>
 
 		<div class="right desk">
 			<a href="/search" class="desk">Search</a>
-			<a href="/signin" class="signin">Sign In</a>
+			{#if !$session.isLoggedIn()}
+				<a href="/signin" class="signin">Sign In</a>
+			{:else}
+				<a href="/me" class="signin">
+					{$session.shortUser?.name ?? ''}
+				</a>
+			{/if}
 			<a href="/submit" class="submit btn small">Submit Recipe</a>
 		</div>
 	</nav>

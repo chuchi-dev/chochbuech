@@ -28,14 +28,21 @@ async function createServer() {
 
 			const { render } = await vite.ssrLoadModule('./src/server.ts');
 
-			const { status, fields, setCookies } = await render({
+			const { status, fields, setCookies, redirect } = await render({
 				method: 'GET',
 				uri,
 				headers: req.headers,
 				cookies: req.get('Cookie'),
 			});
 
-			res.append('Set-Cookie', setCookies);
+			if (setCookies) {
+				res.append('Set-Cookie', setCookies);
+			}
+
+			if (redirect) {
+				res.redirect(redirect, status);
+				return;
+			}
 
 			let html = template;
 			for (const field in fields) {

@@ -20,15 +20,19 @@ export default class Session {
 	shortUser: ShortUser | null;
 	listeners: Listeners<[]>;
 
-	constructor() {
+	private cookies: Cookies;
+
+	constructor(cookies: Cookies) {
 		this.shortSession = null;
 		this.shortUser = null;
 		this.listeners = new Listeners();
+
+		this.cookies = cookies;
 	}
 
 	// will not throw
 	static async init(cache: SsrCache, cookies: Cookies): Promise<Session> {
-		const me = new Session();
+		const me = new Session(cookies);
 
 		// if we are on the client the server as already executed
 		// this code and we can just get the data from the cache
@@ -55,12 +59,20 @@ export default class Session {
 	}
 
 	subscribe(fn: (sess: Session) => void): () => void {
-		return this.listeners.add(() => fn(this));
+		const rm = this.listeners.add(() => fn(this));
+		fn(this);
+
+		return rm;
+	}
+
+	isLoggedIn(): boolean {
+		return !!this.shortSession;
 	}
 
 	setAuthed(auth: Authenticated) {
 		this.shortSession = auth.session;
 		this.shortUser = auth.user;
+		this.cookies.set('SESSION_TOKEN', this.shortSession.token);
 		this.listeners.trigger();
 	}
 }

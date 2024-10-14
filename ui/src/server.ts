@@ -12,7 +12,7 @@ import LoadProps from './lib/LoadProps';
 // req: { method, uri, ?ssrManifest, cookies }
 // opt: { ssrManifest }
 // returns: { status, body, head, setCookies }
-export async function render(req: any, opt: any) {
+export async function render(reqData: any, opt: any) {
 	const cache = new SsrCache();
 	const router = new Router();
 	const cookies = new ServerCookies();
@@ -25,8 +25,10 @@ export async function render(req: any, opt: any) {
 
 	routes.register(router);
 
-	req = router.initServer('http://' + req.headers.host + req.uri);
-	cookies._init(req.cookies ?? '');
+	const req = router.initServer(
+		'http://' + reqData.headers.host + reqData.uri,
+	);
+	cookies._init(reqData.cookies ?? '');
 
 	const session = await Session.init(cache, cookies);
 	context.set('session', session);
@@ -42,7 +44,12 @@ export async function render(req: any, opt: any) {
 	});
 	const { status, page, redirect } = await handleRoute(req, route, loadProps);
 
-	if (redirect) throw new Error('redirect ' + redirect);
+	if (redirect) {
+		return {
+			status,
+			redirect,
+		};
+	}
 
 	const pageStore = new Writable(page);
 

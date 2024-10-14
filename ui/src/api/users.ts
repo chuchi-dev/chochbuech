@@ -36,13 +36,13 @@ export class Authenticated {
 }
 
 export async function login(email: string, password: string) {
-	const d = (await api).request('POST', '/login', { email, password });
+	const d = await api.request('POST', '/login', { email, password });
 
 	return new Authenticated(d);
 }
 
 export async function tokenAuth(token: string): Promise<Authenticated> {
-	const d = (await api).request('POST', '/tokenauth', null, {
+	const d = await api.request('POST', '/tokenauth', null, {
 		'session-token': token,
 	});
 

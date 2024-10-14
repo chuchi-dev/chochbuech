@@ -6,6 +6,8 @@
 	import Toasts from './layout/Toasts.svelte';
 
 	const { page }: { page: Writable<any> } = $props();
+
+	const Component = $derived($page.component);
 </script>
 
 <Toasts />
@@ -14,7 +16,7 @@
 	<Header />
 
 	<main>
-		<svelte:component this={$page.component} {...$page.props} />
+		<Component {...$page.props} />
 	</main>
 
 	<Footer />
