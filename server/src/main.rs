@@ -3,6 +3,7 @@ mod utils;
 mod api;
 mod cors;
 mod error;
+mod recipes;
 mod ui;
 mod users;
 
