@@ -5,9 +5,6 @@ use chuchi_postgres::{
 	time::{DateTime, Timeout},
 	Connection, Database, FromRow, Result, ToRow, UniqueId,
 };
-use serde::{Deserialize, Serialize};
-
-use crate::error::Error;
 
 use super::data::{
 	self, Auth, OAuthPlatform, Session, Token, User, UsersBuilderTrait,
@@ -153,7 +150,7 @@ impl UsersTrait for Users<'_> {
 			},
 			Auth::OAuth {
 				platform: OAuthPlatform::Github,
-				oauth_id,
+				oauth_id: _,
 			} => todo!(),
 		};
 

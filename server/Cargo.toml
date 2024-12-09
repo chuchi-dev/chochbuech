@@ -18,3 +18,6 @@ async-trait = "0.1.81"
 email_address = "0.2.9"
 chuchi-crypto = { version = "0.1.1", features = ["b64", "serde", "postgres"] }
 bcrypt = "0.15.1"
+
+[dev-dependencies]
+chuchi = { version = "0.1.0", features = ["testing"] }

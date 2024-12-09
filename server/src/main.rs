@@ -4,12 +4,14 @@ mod api;
 mod cors;
 mod error;
 mod recipes;
+#[cfg(test)]
+mod tests;
 mod ui;
 mod users;
 
 use std::{fs, path::Path};
 
-use chuchi::Resource;
+use chuchi::{Chuchi, Resource};
 use chuchi_postgres::{db::Db, Database};
 use clap::Parser;
 use serde::Deserialize;
@@ -60,6 +62,11 @@ const DEFAULT_TRACING: &str = "server=info,chuchi=info,warn";
 const UI_DIR: &str = "../ui/dist";
 #[cfg(not(debug_assertions))]
 const UI_DIR: &str = "./ui";
+
+fn init(server: &mut Chuchi) {
+	api::routes(server);
+	users::routes::routes(server);
+}
 
 #[tokio::main]
 async fn main() {
@@ -123,8 +130,8 @@ async fn main() {
 	server.add_resource(db);
 	server.add_resource::<users::data::Users>(Box::new(users));
 
-	api::routes(&mut server);
-	users::routes::routes(&mut server);
+	init(&mut server);
+
 	let js_server = if Path::new(UI_DIR).exists() {
 		info!("using ui dir {UI_DIR}");
 		Some(ui::routes(UI_DIR.to_string(), &mut server))

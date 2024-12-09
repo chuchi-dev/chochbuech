@@ -1,5 +1,5 @@
 use super::{
-	data::{Session, Token, User, UsersTrait, UsersWithConn},
+	data::{Session, Token, User, UsersWithConn},
 	Users,
 };
 use crate::error::Error;
