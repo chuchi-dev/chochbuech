@@ -22,40 +22,41 @@
 			class="menu btn secondary small mob"
 			onclick={() => (open = !open)}
 		>
-			{!open ? 'Menu' : 'Close'}
+			{!open ? 'Menu' : 'Schliessen'}
 		</button>
 	</div>
 
 	<nav class="wrap wide" class:open>
 		<div class="left">
-			<a href="/appetisers">Appetisers</a>
+			<a href="/was-ist-chochbuech">Was ist Chochbuech?</a>
+			<!-- <a href="/appetisers">Appetisers</a>
 			<a href="/mains">Mains</a>
 			<a href="/desserts">Desserts</a>
-			<a href="/search" class="mob">Search</a>
+			<a href="/search" class="mob">Search</a> -->
 		</div>
 
 		<div class="right mob">
-			<a href="/search" class="desk">Search</a>
+			<!-- <a href="/search" class="desk">Search</a> -->
 			{#if !$session.isLoggedIn()}
-				<a href="/signin" class="signin btn secondary">Sign In</a>
+				<a href="/anmelden" class="signin btn secondary">Anmelden</a>
 			{:else}
-				<a href="/me" class="signin">
+				<a href="/ich" class="signin">
 					{$session.shortUser?.name ?? ''}
 				</a>
 			{/if}
-			<a href="/submit" class="submit btn">Submit Recipe</a>
+			<a href="/erstellen" class="submit btn">Rezept erstellen</a>
 		</div>
 
 		<div class="right desk">
-			<a href="/search" class="desk">Search</a>
+			<!-- <a href="/search" class="desk">Search</a> -->
 			{#if !$session.isLoggedIn()}
-				<a href="/signin" class="signin">Sign In</a>
+				<a href="/anmelden" class="signin">Anmelden</a>
 			{:else}
-				<a href="/me" class="signin">
+				<a href="/ich" class="signin">
 					{$session.shortUser?.name ?? ''}
 				</a>
 			{/if}
-			<a href="/submit" class="submit btn small">Submit Recipe</a>
+			<a href="/erstellen" class="submit btn small">Rezept erstellen</a>
 		</div>
 	</nav>
 </header>

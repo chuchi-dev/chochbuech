@@ -1,5 +1,7 @@
 @import './sass/fonts';
 @import './sass/btn';
+@import './sass/input';
+@import './sass/richtext';
 
 :root {
 	--white: #f6f6f4;
@@ -44,6 +46,8 @@ body {
 	max-width: calc(var(--max-width) + 2 * var(--sx-body));
 	padding-left: var(--sx-body);
 	padding-right: var(--sx-body);
+	margin-left: auto;
+	margin-right: auto;
 
 	&.narrow {
 		max-width: calc(var(--max-width-narrow) + 2 * var(--sx-body));
@@ -52,4 +56,12 @@ body {
 	&.wide {
 		max-width: none;
 	}
+}
+
+button {
+	appearance: none;
+	border: none;
+	box-shadow: none;
+	background-color: transparent;
+	color: inherit;
 }

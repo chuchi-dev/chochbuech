@@ -8,6 +8,10 @@
 	const session = getSession();
 </script>
 
+<svelte:head>
+	<title>Chochbuech</title>
+</svelte:head>
+
 <div class="home">
 	<h1>
 		Hallo <i>{$session.shortUser?.name ?? ''}</i>

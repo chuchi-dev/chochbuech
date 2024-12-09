@@ -1,11 +1,20 @@
 <footer>
 	<div class="wrap wide top">
-		<div class="copyright">© {new Date().getFullYear()}</div>
+		<div class="copyright">
+			<span>© {new Date().getFullYear()}</span>
+			<a href="https://soerenmeier.ch">Sören Meier</a>
+		</div>
 
 		<nav class="footer">
-			<a href="/contact">Contact</a>
-			<a href="/imprint">Imprint</a>
-			<a href="/privacy">Privacy</a>
+			<a
+				href="https://github.com/chuchi-dev/chuchi-recipe"
+				target="_blank"
+			>
+				Quellcode
+			</a>
+			<!-- <a href="/contact">Contact</a> -->
+			<!-- <a href="/impressum">Impressum</a> -->
+			<!-- <a href="/privacy">Privacy</a> -->
 		</nav>
 	</div>
 
@@ -30,6 +39,11 @@
 		border-top: 1px solid var(--blue-15);
 	}
 
+	.copyright a {
+		text-decoration: none;
+		color: inherit;
+	}
+
 	.top {
 		display: flex;
 		justify-content: space-between;
@@ -39,7 +53,7 @@
 			gap: 1rem;
 		}
 
-		a {
+		nav a {
 			display: block;
 			color: inherit;
 			text-decoration: none;

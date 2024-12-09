@@ -3,31 +3,20 @@
 </script>
 
 <svelte:head>
-	<title>Chochbuech</title>
-	<meta
-		name="description"
-		content="Chochbuech ist eine Schweizer Rezepte-Plattform. Entdecke neue Rezepte, teile deine eigenen Kreationen und lasse dich von der Community inspirieren."
-	/>
+	<title>Neues Rezept erstellen</title>
 </svelte:head>
 
-<div class="home wrap">
+<div class="intro wrap">
 	<div class="inner">
-		<h1>
-			Hier entsteht <i>Chochbuech</i>
-		</h1>
-		<p>
-			Bald kannst du neue Rezepte entdecken und deine eigenen Rezepte
-			teilen.
-			<br />
-			Melde dich an, um benachrichtigt zu werden, sobald es losgeht.
-		</p>
+		<h1>Das ist leider noch nicht ganz fertig</h1>
+		<p>Melde dich an, um benachrichtigt zu werden, sobald es losgeht.</p>
 
 		<GetNotified />
 	</div>
 </div>
 
 <style lang="scss">
-	.home {
+	.intro {
 		display: flex;
 		height: 100%;
 		justify-content: center;

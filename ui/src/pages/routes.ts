@@ -5,7 +5,9 @@ export { NotFound };
 
 export function register(router: Router) {
 	router.register('/', () => import('./Index.svelte'));
-	router.register('/signin', () => import('./SignIn.svelte'));
+	router.register('/anmelden', () => import('./SignIn.svelte'));
+	router.register('/erstellen', () => import('./New.svelte'));
+	router.register('/was-ist-chochbuech', () => import('./About.svelte'));
 
-	router.register('/me', () => import('./me/Index.svelte'));
+	router.register('/ich', () => import('./me/Index.svelte'));
 }
