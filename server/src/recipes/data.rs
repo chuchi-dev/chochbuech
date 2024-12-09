@@ -1,4 +1,5 @@
-use chuchi_postgres::{time::DateTime, UniqueId};
+use chuchi::impl_res_extractor;
+use chuchi_postgres::{db::Conn, time::DateTime, UniqueId};
 
 #[derive(Debug, Clone)]
 pub struct Recipe {
@@ -47,3 +48,15 @@ pub enum Block {
 	Text(String),
 	// Image(String),
 }
+
+pub type Recipes = Box<dyn RecipesBuilderTrait + Send + Sync>;
+pub type RecipesWithConn<'a> = Box<dyn RecipesTrait + Send + Sync + 'a>;
+
+impl_res_extractor!(Recipes);
+
+pub trait RecipesBuilderTrait {
+	fn with_conn<'a>(&'a self, conn: Conn<'a>) -> RecipesWithConn<'a>;
+}
+
+#[async_trait::async_trait]
+pub trait RecipesTrait {}

@@ -3,6 +3,7 @@ mod utils;
 mod api;
 mod cors;
 mod error;
+#[allow(dead_code)]
 mod recipes;
 #[cfg(test)]
 mod tests;
@@ -101,6 +102,7 @@ async fn main() {
 	let conn = db.get().await.unwrap();
 
 	let users = users::database::UsersBuilder::new(&database).await;
+	// let recipes = recipes::database::RecipesBuilder::new(&database).await;
 
 	match args.subcmd {
 		Some(SubCommand::CreateUser(CreateUser {
@@ -129,6 +131,7 @@ async fn main() {
 	server.add_resource(cfg);
 	server.add_resource(db);
 	server.add_resource::<users::data::Users>(Box::new(users));
+	// server.add_resource::<recipes::data::Recipes>(Box::new(recipes));
 
 	init(&mut server);
 
