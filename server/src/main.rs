@@ -9,6 +9,7 @@ mod recipes;
 mod tests;
 mod ui;
 mod users;
+mod waitlist;
 
 use std::{fs, path::Path};
 
@@ -67,6 +68,7 @@ const UI_DIR: &str = "./ui";
 fn init(server: &mut Chuchi) {
 	api::routes(server);
 	users::routes::routes(server);
+	waitlist::routes::routes(server);
 }
 
 #[tokio::main]
@@ -102,6 +104,7 @@ async fn main() {
 	let conn = db.get().await.unwrap();
 
 	let users = users::database::UsersBuilder::new(&database).await;
+	let waitlist = waitlist::database::WaitlistBuilder::new(&database).await;
 	// let recipes = recipes::database::RecipesBuilder::new(&database).await;
 
 	match args.subcmd {
@@ -131,6 +134,7 @@ async fn main() {
 	server.add_resource(cfg);
 	server.add_resource(db);
 	server.add_resource::<users::data::Users>(Box::new(users));
+	server.add_resource::<waitlist::data::Waitlist>(Box::new(waitlist));
 	// server.add_resource::<recipes::data::Recipes>(Box::new(recipes));
 
 	init(&mut server);

@@ -449,9 +449,9 @@ dependencies = [
 
 [[package]]
 name = "chuchi-postgres"
-version = "0.1.5"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "71ad2c0fd9b8d44c1c777718f6e43164a32d6c96843d3b1b253f41cc99f1eafa"
+checksum = "14af0172819cdb43c9851c40f5c101612a5177db10dc9c4b17e1125d221c6309"
 dependencies = [
  "base64 0.22.1",
  "bytes",

@@ -6,6 +6,7 @@ use crate::{
 		mock::UsersBuilder,
 		Users,
 	},
+	waitlist::{self, mock::WaitlistBuilder},
 	Config, DbConf,
 };
 
@@ -32,6 +33,9 @@ async fn init() -> ChuchiSharedApi {
 	server.add_resource(cfg);
 	server.add_resource(Db::new_memory());
 	server.add_resource::<users::data::Users>(Box::new(UsersBuilder::new()));
+	server.add_resource::<waitlist::data::Waitlist>(Box::new(
+		WaitlistBuilder::new(),
+	));
 	// server.add_resource::<recipes::data::Recipes>(Box::new(
 	// 	RecipesBuilder::new(),
 	// ));
