@@ -87,6 +87,10 @@
 
 	// mobile
 	@media (max-width: $bp - 1px) {
+		header {
+			z-index: 99;
+		}
+
 		.desk {
 			display: none !important;
 		}

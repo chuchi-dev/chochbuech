@@ -2,7 +2,9 @@
 	<div class="wrap wide top">
 		<div class="copyright">
 			<span>© {new Date().getFullYear()}</span>
-			<a href="https://soerenmeier.ch">Sören Meier</a>
+			<a href="https://soerenmeier.ch" target="_blank">Sören</a>
+			&
+			<a href="https://frh.work" target="_blank">Sandro</a>
 		</div>
 
 		<nav class="footer">
@@ -22,7 +24,7 @@
 		<p>
 			Made with <span class="heart">❤</span>
 			using
-			<a href="https://chuchi.dev">Chuchi</a>
+			<a href="https://chuchi.dev" target="_blank">Chuchi</a>
 		</p>
 	</div>
 </footer>
