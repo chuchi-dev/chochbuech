@@ -1,0 +1,5 @@
+services:
+  chochbuech:
+    build: .
+    extra_hosts:
+      host.docker.internal: host-gateway
