@@ -5,10 +5,11 @@ edition = "2024"
 publish = false
 
 # zipp from feat/members until the website logins (members, /site-auth)
-# are merged to main and released
+# and zipp-members are merged to main and released
 [dependencies]
 zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "feat/members" }
 zipp-seo = { git = "https://github.com/zipp-cms/zipp-next", branch = "feat/members" }
+zipp-members = { git = "https://github.com/zipp-cms/zipp-next", branch = "feat/members" }
 
 [dev-dependencies]
 serde_json = "1.0"

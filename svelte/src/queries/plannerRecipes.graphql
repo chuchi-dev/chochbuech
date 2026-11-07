@@ -1,4 +1,5 @@
-# the weekly planner: all recipes to pick from with their ingredients
+# the weekly planner: all recipes to pick from with their ingredients,
+# the user's own ones by their author
 query ($siteId: [QueryArgument]) {
   recipes: entries(
     section: "recipes"
@@ -10,6 +11,7 @@ query ($siteId: [QueryArgument]) {
     title
     url
     ... on recipe_Entry {
+      authorId
       serves
       chapters {
         ... on chapter_Block {

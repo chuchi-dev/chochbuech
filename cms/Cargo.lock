@@ -469,6 +469,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "zipp-cms",
+ "zipp-members",
  "zipp-seo",
 ]
 
@@ -3651,7 +3652,7 @@ dependencies = [
 [[package]]
 name = "zipp-cms"
 version = "0.1.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=feat%2Fmembers#7f692de44e0a8cd9369af6ef720b58c9585b14bc"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=feat%2Fmembers#beebfb6620c26318c98e523710212ce8255ec07d"
 dependencies = [
  "async-graphql",
  "async-graphql-axum",
@@ -3684,9 +3685,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "zipp-members"
+version = "0.1.0"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=feat%2Fmembers#beebfb6620c26318c98e523710212ce8255ec07d"
+dependencies = [
+ "serde",
+ "serde_json",
+ "zipp-cms",
+]
+
+[[package]]
 name = "zipp-seo"
 version = "0.1.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=feat%2Fmembers#7f692de44e0a8cd9369af6ef720b58c9585b14bc"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=feat%2Fmembers#beebfb6620c26318c98e523710212ce8255ec07d"
 dependencies = [
  "serde",
  "serde_json",

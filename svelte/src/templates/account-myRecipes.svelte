@@ -1,47 +1,87 @@
 <script module>
 	/**
 	 * @typedef {{
-	 *   key: string,
+	 *   id: number,
 	 *   title: string,
 	 *   posted: string,
 	 *   image: any,
-	 *   view: string,
+	 *   view: string | null,
 	 *   edit: string,
 	 * }} Row
 	 */
 </script>
 
 <script>
+	import { getCrelte } from 'crelte';
+	import imagesQuery from '@/queries/recipesById.graphql';
 	import AccountLayout from '@/components/AccountLayout.svelte';
 	import Button from '@/components/Button.svelte';
 	import RoundArrow from '@/components/RoundArrow.svelte';
-	import { getMock } from '@/lib/mock.svelte';
+	import {
+		deleteEntry,
+		errorMessage,
+		forgetQueries,
+		listRecipes,
+	} from '@/lib/members';
+	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
+	// the recipes of the user in zipp (they are its author), loaded in the
+	// browser through /members
 	let { entry } = $props();
 
-	const mock = getMock();
+	const crelte = getCrelte();
+	const session = getSession();
 	const toasts = getToasts();
 
+	/** @type {Row[] | null} */
+	let rows = $state(null);
+	/** @type {string | null} */
+	let failed = $state(null);
 	/** @type {string | null} */
 	let openKey = $state(null);
 
-	// the recipes written in this browser; the recipes of the user in zipp
-	// come with entry authors
-	/** @type {Row[]} */
-	let rows = $derived(
-		mock.recipes.map(l => ({
-			key: l.id,
-			title: l.title || 'Untitled',
-			posted: formatDate(l.postedAt),
-			image: null,
-			view: `/my-recipes/${l.id}`,
-			edit: `/recipes/edit/${l.id}`,
-		})),
-	);
+	$effect(() => {
+		if (!session.user) return;
+		load();
+	});
 
-	/** `July 29th, 2024` like zipp's postDate @param {number} ms */
+	async function load() {
+		rows = null;
+		failed = null;
+		try {
+			const { entries } = await listRecipes();
+			// the images of the live recipes, zipp gives asset ids
+			const ids = entries.filter(e => e.published).map(e => e.id);
+			/** @type {any[]} */
+			let live = [];
+			if (ids.length) {
+				const data = /** @type {any} */ (
+					await crelte.query(imagesQuery, { ids })
+				);
+				live = data.recipes ?? [];
+			}
+			rows = entries.map(e => {
+				const r = live.find(r => r.id === String(e.id));
+				return {
+					id: e.id,
+					title: e.title || 'Untitled',
+					posted: e.published
+						? (r?.postDate ?? formatDate(e.postDate))
+						: 'Not published',
+					image: r?.image?.[0] ?? null,
+					view: e.published && r ? r.url : null,
+					edit: `/recipes/edit/${e.id}`,
+				};
+			});
+		} catch (e) {
+			failed = errorMessage(e);
+		}
+	}
+
+	/** `July 29th, 2024` like zipp's postDate @param {number | null} ms */
 	function formatDate(ms) {
+		if (!ms) return '';
 		const d = new Date(ms);
 		const day = d.getDate();
 		const th =
@@ -57,9 +97,16 @@
 	}
 
 	/** @param {Row} row */
-	function remove(row) {
+	async function remove(row) {
 		if (!confirm(`Delete “${row.title}”? This cannot be undone.`)) return;
-		mock.deleteRecipe(row.key);
+		try {
+			await deleteEntry(row.id);
+			forgetQueries(crelte);
+		} catch (e) {
+			toasts.error(errorMessage(e));
+			return;
+		}
+		rows = rows?.filter(r => r.id !== row.id) ?? null;
 		toasts.show('The recipe has been deleted successfully.');
 	}
 </script>
@@ -81,7 +128,7 @@
 {/snippet}
 
 {#snippet actions(/** @type {Row} */ row)}
-	<a href={row.view}>View</a>
+	{#if row.view}<a href={row.view}>View</a>{/if}
 	<a href={row.edit}>Edit</a>
 	<button type="button" onclick={() => remove(row)}>Delete</button>
 {/snippet}
@@ -92,12 +139,14 @@
 	{/snippet}
 
 	<div class="narrow">
-		{#if !rows.length}
+		{#if failed}
+			<p class="empty">{failed}</p>
+		{:else if !rows}
+			<p class="empty">Loading …</p>
+		{:else if !rows.length}
 			<p class="empty">
-				{mock.localLoaded ? 'No recipes yet.' : 'Loading …'}
-				{#if mock.localLoaded}<a href="/recipes/new">
-						Write your first one.
-					</a>{/if}
+				No recipes yet.
+				<a href="/recipes/new">Write your first one.</a>
 			</p>
 		{:else}
 			<table class="table">
@@ -110,7 +159,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each rows as row (row.key)}
+					{#each rows as row (row.id)}
 						<tr>
 							<td class="col-image">
 								<a
@@ -123,7 +172,11 @@
 								</a>
 							</td>
 							<td class="title">
-								<a href={row.view}>{row.title}</a>
+								{#if row.view}
+									<a href={row.view}>{row.title}</a>
+								{:else}
+									{row.title}
+								{/if}
 							</td>
 							<td class="date">{row.posted}</td>
 							<td>
@@ -137,21 +190,22 @@
 			</table>
 
 			<ul class="accordion">
-				{#each rows as row (row.key)}
-					{@const open = openKey === row.key}
+				{#each rows as row (row.id)}
+					{@const open = openKey === String(row.id)}
 					<li>
 						<button
 							type="button"
 							class="toggle"
 							aria-expanded={open}
-							aria-controls="recipe-{row.key}"
-							onclick={() => (openKey = open ? null : row.key)}
+							aria-controls="recipe-{row.id}"
+							onclick={() =>
+								(openKey = open ? null : String(row.id))}
 						>
 							<span>{row.title}</span>
 							<RoundArrow {open} />
 						</button>
 						{#if open}
-							<div class="details" id="recipe-{row.key}">
+							<div class="details" id="recipe-{row.id}">
 								<p class="posted">Posted on: {row.posted}</p>
 								<div class="actions">
 									{@render actions(row)}

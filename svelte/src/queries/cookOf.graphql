@@ -1,0 +1,9 @@
+# the cook of a member: the cooks entry they are the author of, their
+# public profile; the editor sets it on their recipes
+query ($siteId: [QueryArgument], $author: [QueryArgument]) {
+  cook: entry(section: "cooks", siteId: $siteId, authorId: $author) {
+    id
+    title
+    url
+  }
+}

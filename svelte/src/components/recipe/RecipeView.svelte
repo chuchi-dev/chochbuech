@@ -44,7 +44,7 @@
 
 	<div class="media wrap">
 		<div class="actions">
-			<Actions id={recipe.id} editUrl={recipe.editUrl} />
+			<Actions id={recipe.id} authorId={recipe.authorId} />
 		</div>
 		{#if img}
 			<img

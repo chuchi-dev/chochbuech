@@ -14,8 +14,8 @@ own creations. Live at [chochbuech.com](https://chochbuech.com).
 - `craft/.env`: crelte reads its settings from there (there is no Craft).
 
 Members log in on the website with their zipp account (role `member`,
-no studio); what they do there (favorites, ratings, the weekly planner and
-writing recipes) is a mock in the browser for now, see
+no studio) and write their own recipes there; favorites, ratings and the
+weekly planner are a mock in the browser for now, see
 [docs/mock.md](docs/mock.md).
 
 ### Logins
@@ -32,6 +32,27 @@ The server render reads the user with the cookie (`loadSession` in
 `--trusted-proxy` (the crelte server's address, else all visitors share
 one limit of wrong passwords), `--site-url` (the links of the mails) and
 `--smtp-url` (without it there are no reset mails).
+
+### Recipes of members
+
+A member's recipes are zipp entries with them as author, written in the
+editor (`/recipes/new`, `/recipes/edit/<id>`) and live at once, no
+review yet. The browser calls `/members/*` of the crelte server
+(`svelte/src/memberRoutes.js`, JSON from the site's own origin, the
+image upload as the only multipart request, up to 8 MB), which forwards
+to zipp's plugin zipp-members with the session's token: their recipes
+(`GET /members/entries?section=recipes`, My Recipes), one of them, a new
+one, a change, a delete and `POST /members/assets` for the photo. A
+user changes only the recipes they wrote, admins (who can log in on the
+website too) as well: on someone else's recipe everybody gets Make it
+your own. zipp would let admins edit all of them, the website doesn't.
+
+A member's cook (their public profile, the "by" of their recipes) is the
+cooks entry they are the author of (`cookOf.graphql`); the editor sets it
+on their recipes (a user without one writes as Anonymous). "Make it
+your own" on someone else's recipe (`/recipes/copy/<id>`) starts a new
+recipe from it, with its photo. An admin creates the member and their
+cook in the studio and sets the cook's author there.
 
 ### Local development
 

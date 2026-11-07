@@ -18,11 +18,17 @@ Read `README.md` first. The backend is zipp (`cms/`), the website crelte
 ## The website
 
 - Svelte 5 runes, crelte 0.6. `svelte/src/App.svelte` owns the header, the
-  footer, the toasts, the session (`lib/session.svelte.ts`, `getSession()`:
-  the logged in zipp user) and the mock (`lib/mock.svelte.ts`, a context).
+  footer, the toasts, the globals (`global.graphql`, in its
+  `loadGlobalData`), the session (`lib/session.svelte.ts`, `getSession()`:
+  the logged in zipp user) and the mock (`lib/mock.svelte.ts`, a context:
+  favorites, ratings, the planner).
 - The session token never reaches the browser: it is an httpOnly cookie of
-  the routes in `svelte/src/authRoutes.js` (crelte's server router), see
-  Logins in `README.md`.
+  the routes in `svelte/src/authRoutes.js` and `memberRoutes.js` (crelte's
+  server router), see Logins and Recipes of members in `README.md`. The
+  browser's side of the recipes is `lib/members.ts`.
+- crelte keeps the answers of queries in the browser for the whole visit:
+  after a change call `forgetQueries` (`lib/members.ts`), else the next
+  page shows the old content.
 - Templates are `svelte/src/templates/<section>-<type>.svelte`. Pages that
   are no entry of zipp (signing in, a new password, the account, the
   editor) are routes of

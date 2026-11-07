@@ -85,6 +85,7 @@ query ($uri: [String], $siteId: [QueryArgument]) {
     }
     ... on recipe_Entry {
       slug
+      authorId
       postDate @formatDateTime(format: "F jS, Y")
       rating
       serves

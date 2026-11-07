@@ -1,11 +1,11 @@
 <script module>
 	import recipeQuery from '@/queries/recipeForEdit.graphql';
 
-	// a recipe of zipp to edit comes from zipp, a local one from the
-	// browser (in the component)
+	// the recipe to change or to copy as it is live (its image, its
+	// author); the fields to change come from /members in the component
 	/** @type {import('crelte').LoadData} */
 	export const loadData = (cr, entry) => {
-		const id = entry?.recipeId;
+		const id = entry?.recipeId ?? entry?.copyOf;
 		if (!id || !/^\d+$/.test(id)) return null;
 		return cr.query(recipeQuery, { id });
 	};
@@ -13,27 +13,37 @@
 
 <script>
 	import { untrack } from 'svelte';
-	import { getGlobal, getRoute, getRouter } from 'crelte';
+	import { getCrelte, getGlobal, getRoute, getRouter } from 'crelte';
+	import cookQuery from '@/queries/cookOf.graphql';
 	import Button from '@/components/Button.svelte';
 	import Icon from '@/components/Icon.svelte';
 	import ChapterCard from '@/components/editor/ChapterCard.svelte';
+	import ImageField from '@/components/editor/ImageField.svelte';
 	import NumberField from '@/components/editor/NumberField.svelte';
 	import {
 		TIME_UNITS,
 		emptyForm,
-		fromLocal,
-		fromZipp,
+		fieldErrors,
+		fromEntry,
+		fromGraphql,
 		newChapter,
-		toLocal,
+		toFields,
 		validate,
 	} from '@/components/editor/form';
-	import { getMock } from '@/lib/mock.svelte';
+	import {
+		MemberError,
+		createRecipe,
+		errorMessage,
+		forgetQueries,
+		getEntry,
+		updateEntry,
+	} from '@/lib/members';
 	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
 	/** @import { Form, Errors } from '@/components/editor/form' */
 
-	const mock = getMock();
+	const crelte = getCrelte();
 	const session = getSession();
 	const toasts = getToasts();
 	const router = getRouter();
@@ -44,35 +54,72 @@
 	let { entry, recipe = null } = $props();
 
 	// the template is new for every url, the props are read once
-	const zipp = untrack(() => recipe);
+	const live = untrack(() => recipe);
 	/** @type {string | null} */
 	const recipeId = untrack(() => entry.recipeId) ?? null;
-	const isLocal = !!recipeId?.startsWith('local-');
+	const copyOf = untrack(() => entry.copyOf) ?? null;
 	const editing = !!recipeId;
 
 	/** @type {Form | null} */
 	let form = $state(
-		!editing ? emptyForm() : !isLocal && zipp ? fromZipp(zipp) : null,
+		copyOf
+			? live
+				? fromGraphql(live)
+				: null
+			: editing
+				? null
+				: emptyForm(),
 	);
-	let notFound = $state(editing && !isLocal && !zipp);
-	// a local one, or the local copy of a zipp recipe, after the mount
-	let checkedLocal = false;
+	// why the recipe can't be edited: missing, someone else's
+	/** @type {string | null} */
+	let problem = $state(copyOf && !live ? 'missing' : null);
 	/** @type {Errors} */
 	let errors = $state({});
+	// zipp's answer to the last save
+	/** @type {Errors} */
+	let refused = $state({});
 	let tried = $state(false);
+	let saving = $state(false);
+	// the user's public profile, the cook of what they write
+	/** @type {{ id: string, title: string } | null} */
+	let cook = $state(null);
+	/** @type {Promise<unknown> | null} */
+	let cookLoaded = null;
 
+	// the fields of the recipe to change, and the cook of the user
 	$effect(() => {
-		if (!mock.localLoaded || checkedLocal || !editing) return;
-		checkedLocal = true;
-		const local = isLocal
-			? mock.localRecipe(recipeId)
-			: mock.recipes.find(r => r.basedOn === recipeId);
-		if (local) {
-			form = fromLocal(local);
-			notFound = false;
-		} else if (isLocal) {
-			notFound = true;
+		const user = session.user;
+		if (!user || cookLoaded) return;
+		cookLoaded = crelte
+			.query(cookQuery, { author: [user.id] })
+			.then(data => (cook = /** @type {any} */ (data).cook ?? null))
+			.catch(() => {});
+		if (!editing) return;
+		// only its author edits a recipe, admins too (zipp would let them)
+		if (live && live.authorId !== String(user.id)) {
+			problem = 'notYours';
+			return;
 		}
+		getEntry(/** @type {string} */ (recipeId))
+			.then(e => {
+				const img = live?.image?.[0];
+				form = fromEntry(
+					e,
+					img && {
+						id: Number(img.id),
+						url: img.url,
+						width: img.width,
+						height: img.height,
+					},
+				);
+			})
+			.catch(e => {
+				if (e instanceof MemberError && e.status === 403)
+					problem = 'notYours';
+				else if (e instanceof MemberError && e.status === 404)
+					problem = 'missing';
+				else problem = errorMessage(e);
+			});
 	});
 
 	// once tried, the errors follow the input
@@ -80,13 +127,12 @@
 		if (tried && form) errors = validate(form);
 	});
 
+	let shown = $derived({ ...refused, ...errors });
 	let title = $derived(editing ? 'Edit Recipe' : 'New Recipe');
 	let signInUrl = $derived(
 		'/sign-in?next=' + encodeURIComponent($route.url.pathname),
 	);
-	let cancelUrl = $derived(
-		isLocal ? `/my-recipes/${recipeId}` : (zipp?.url ?? '/account'),
-	);
+	let cancelUrl = $derived(live?.url ?? '/account');
 
 	/** @param {number} i @param {-1 | 1} dir */
 	function moveChapter(i, dir) {
@@ -107,14 +153,23 @@
 		form.chapters.push(newChapter());
 	}
 
+	/** The path of a recipe's page, of the site's url. @param {any} e */
+	function pathOf(e) {
+		if (!e.published || !e.uri) return '/account';
+		return e.url ? new URL(e.url).pathname : '/' + e.uri;
+	}
+
 	/** @param {SubmitEvent} e */
-	function save(e) {
+	async function save(e) {
 		e.preventDefault();
-		if (!form) return;
+		if (!form || saving) return;
 		tried = true;
+		refused = {};
 		errors = validate(form);
 		const missing = [
+			errors.image && 'a photo',
 			errors.title && 'the title',
+			errors.category && 'the category',
 			errors.serves && 'the number of people',
 			errors.chapters && 'at least one ingredient or step',
 		].filter(Boolean);
@@ -129,9 +184,38 @@
 				form.chapters[0].open = true;
 			return;
 		}
-		const saved = mock.saveRecipe(toLocal($state.snapshot(form)));
-		toasts.show('The recipe has been saved.');
-		router.open('/my-recipes/' + saved.id);
+
+		saving = true;
+		await cookLoaded;
+		const snap = $state.snapshot(form);
+		const fields = toFields(snap);
+		// the user's cook (none: anonymous); a change keeps the recipe's
+		// cook when the user has none
+		if (!editing) fields.cook = cook ? [Number(cook.id)] : [];
+		else if (cook) fields.cook = [Number(cook.id)];
+		try {
+			if (editing) {
+				const id = Number(recipeId);
+				const r = await updateEntry(id, snap.title.trim(), fields);
+				forgetQueries(crelte);
+				toasts.show(
+					r.saved === 'draft'
+						? 'Your changes are saved, an editor will publish them.'
+						: 'The recipe has been saved.',
+				);
+				router.open(pathOf(r.entry));
+			} else {
+				const created = await createRecipe(snap.title.trim(), fields);
+				forgetQueries(crelte);
+				toasts.show('The recipe has been published.');
+				router.open(pathOf(created));
+			}
+		} catch (err) {
+			if (err instanceof MemberError) refused = fieldErrors(err.fields);
+			toasts.error(errorMessage(err));
+		} finally {
+			saving = false;
+		}
 	}
 </script>
 
@@ -145,10 +229,26 @@
 		<p class="lead">Sign in to write your own recipes.</p>
 		<Button href={signInUrl}>Sign In</Button>
 	</div>
-{:else if notFound}
+{:else if problem === 'notYours'}
 	<div class="note narrow">
 		<h1 class="h1">{title}</h1>
-		<p class="lead">This recipe does not exist (anymore).</p>
+		<p class="lead">
+			This recipe is not yours, so you cannot change it. Make it your own:
+			start a recipe of yours from it.
+		</p>
+		<div class="buttons">
+			<Button href="/recipes/copy/{recipeId}">Make it your own</Button>
+			<Button href={cancelUrl} look="secondary">Back</Button>
+		</div>
+	</div>
+{:else if problem}
+	<div class="note narrow">
+		<h1 class="h1">{title}</h1>
+		<p class="lead">
+			{problem === 'missing'
+				? 'This recipe does not exist (anymore).'
+				: problem}
+		</p>
 		<Button href="/account" look="secondary">My Recipes</Button>
 	</div>
 {:else if !form}
@@ -161,30 +261,43 @@
 		<div class="bar">
 			<div class="bar-inner">
 				<Button href={cancelUrl} look="secondary">Cancel</Button>
-				<Button type="submit">Save &amp; Publish Recipe</Button>
+				<Button type="submit" disabled={saving}>
+					{saving ? 'Saving …' : 'Save & Publish Recipe'}
+				</Button>
 			</div>
 		</div>
 
 		<div class="content narrow">
 			<h1 class="h1">{title}</h1>
 
+			{#if copyOf && live}
+				<p class="lead from">
+					Based on <a href={live.url}>{live.title}</a>
+					: change what you like, it becomes a recipe of yours.
+				</p>
+			{/if}
+
 			<div class="fields">
+				<div class="field wide">
+					<ImageField bind:image={form.image} error={shown.image} />
+				</div>
+
 				<div class="field wide">
 					<label for="title">Recipe Title:</label>
 					<input
 						id="title"
 						class="box"
-						class:invalid={!!errors.title}
+						class:invalid={!!shown.title}
 						type="text"
 						autocomplete="off"
 						bind:value={form.title}
-						aria-invalid={errors.title ? true : undefined}
-						aria-describedby={errors.title
+						aria-invalid={shown.title ? true : undefined}
+						aria-describedby={shown.title
 							? 'title-error'
 							: undefined}
 					/>
-					{#if errors.title}
-						<p class="error" id="title-error">{errors.title}</p>
+					{#if shown.title}
+						<p class="error" id="title-error">{shown.title}</p>
 					{/if}
 				</div>
 
@@ -196,13 +309,16 @@
 								<input
 									type="radio"
 									name="category"
-									value={c.slug}
+									value={c.id}
 									bind:group={form.category}
 								/>
 								<span>{c.singular || c.title}</span>
 							</label>
 						{/each}
 					</div>
+					{#if shown.category}
+						<p class="error">{shown.category}</p>
+					{/if}
 				</fieldset>
 
 				<NumberField
@@ -211,6 +327,7 @@
 					bind:value={form.total}
 					bind:unit={form.totalUnit}
 					units={TIME_UNITS}
+					error={shown.total}
 				/>
 
 				<NumberField
@@ -219,6 +336,7 @@
 					bind:value={form.active}
 					bind:unit={form.activeUnit}
 					units={TIME_UNITS}
+					error={shown.active}
 				/>
 
 				<NumberField
@@ -226,16 +344,16 @@
 					label="This recipe serves:"
 					step="1"
 					min={1}
-					error={errors.serves}
+					error={shown.serves}
 					bind:value={form.serves}
 					suffix="people"
 				/>
 			</div>
 
 			<h2 class="h1 instructions">Instructions</h2>
-			{#if errors.chapters}
+			{#if shown.chapters}
 				<p class="error chapters-error" role="alert">
-					{errors.chapters}
+					{shown.chapters}
 				</p>
 			{/if}
 
@@ -268,6 +386,22 @@
 		align-items: flex-start;
 		gap: 2rem;
 		padding-block: 5rem var(--sy-section);
+	}
+
+	.buttons {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1rem;
+	}
+
+	.from {
+		margin-top: 2rem;
+		color: var(--accent-soft);
+
+		a {
+			@include underline;
+			color: var(--accent);
+		}
 	}
 
 	.editor {
@@ -485,6 +619,10 @@
 	}
 
 	@include hover {
+		.from a:hover {
+			opacity: 0.6;
+		}
+
 		.pill:hover input:not(:checked) + span {
 			border-color: var(--accent);
 		}

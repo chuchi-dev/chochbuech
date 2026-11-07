@@ -1,6 +1,7 @@
 // The pages of the frontend that are no entries of zipp: signing in, the
-// account and the editor. Logging in is zipp's, the rest mocks for now (see
-// lib/mock.svelte.ts); their template is `account-<type>.svelte`.
+// account and the editor. Logging in and the recipes are zipp's, favorites,
+// ratings and the planner mocks (see lib/mock.svelte.ts); their template
+// is `account-<type>.svelte`.
 
 /** @param {string} typeHandle @param {string} title */
 const page = (typeHandle, title) => () => ({
@@ -26,12 +27,12 @@ export function staticRoutes(router) {
 			title: 'Edit Recipe',
 			recipeId: csr.getParam('id'),
 		}))
-		// a recipe of the editor, only in this browser
-		.add('/my-recipes/:id', csr => ({
+		// Make it your own: a new recipe from someone else's
+		.add('/recipes/copy/:id', csr => ({
 			sectionHandle: 'account',
-			typeHandle: 'localRecipe',
-			title: 'Recipe',
-			recipeId: csr.getParam('id'),
+			typeHandle: 'editor',
+			title: 'New Recipe',
+			copyOf: csr.getParam('id'),
 		}));
 }
 

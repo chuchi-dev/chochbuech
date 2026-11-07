@@ -3,6 +3,7 @@ import * as errorPage from './Error.svelte';
 import { main, mainError } from 'crelte/server';
 import { seoRoutes } from 'meierlabs-seo/server';
 import { authRoutes } from './authRoutes.js';
+import { memberRoutes } from './memberRoutes.js';
 
 export const queries = import.meta.glob('@/queries/*', { eager: true });
 
@@ -20,4 +21,6 @@ export async function routes(router) {
 	seoRoutes(router);
 	// the logins of the website, forwarded to the cms
 	authRoutes(router);
+	// the editor's recipes and images, forwarded to the cms
+	memberRoutes(router);
 }

@@ -42,10 +42,12 @@ export function formatTime(min: number | null): string {
 	return [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' ');
 }
 
-/** What RecipeView shows, from zipp or from the editor. */
+/** What RecipeView shows. */
 export type ViewRecipe = {
-	// the zipp id for favorites and ratings, null for a local recipe
-	id: string | null;
+	// the zipp id, for favorites and ratings
+	id: string;
+	// the user who wrote it, they and admins edit it
+	authorId: string | null;
 	title: string;
 	category: string | null;
 	cook: string | null;
@@ -55,7 +57,6 @@ export type ViewRecipe = {
 	totalTime: number | null;
 	activeTime: number | null;
 	image: any | null;
-	editUrl: string;
 	chapters: {
 		title: string;
 		ingredients: { amount: number | null; unit: string; name: string }[];
@@ -84,6 +85,7 @@ export function fromZipp(entry: any): ViewRecipe {
 	const cook = entry.cook?.[0] ?? null;
 	return {
 		id: entry.id,
+		authorId: entry.authorId ?? null,
 		title: entry.title,
 		category: entry.category?.[0]?.singular ?? null,
 		cook: cook?.title ?? null,
@@ -93,43 +95,10 @@ export function fromZipp(entry: any): ViewRecipe {
 		totalTime: entry.totalTime,
 		activeTime: entry.activeTime,
 		image: entry.image?.[0] ?? null,
-		editUrl: `/recipes/edit/${entry.id}`,
 		chapters: (entry.chapters ?? []).map((c: any) => ({
 			title: c.title ?? '',
 			ingredients: c.ingredients ?? [],
 			steps: zippSteps(c.steps?.chunks),
-		})),
-	};
-}
-
-const escape = (s: string) =>
-	s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-/** A recipe of the editor, by the signed in user. */
-export function fromLocal(
-	r: import('./mock.svelte').LocalRecipe,
-	cook: string | null,
-	categories: any[] | null,
-): ViewRecipe {
-	return {
-		id: null,
-		title: r.title,
-		category:
-			categories?.find(c => c.slug === r.category)?.singular ?? null,
-		cook,
-		cookUrl: null,
-		rating: null,
-		serves: r.serves || 1,
-		totalTime: r.totalTime,
-		activeTime: r.activeTime,
-		image: null,
-		editUrl: `/recipes/edit/${r.id}`,
-		chapters: r.chapters.map(c => ({
-			title: c.title,
-			ingredients: c.ingredients,
-			steps: c.steps
-				.filter(s => s.trim())
-				.map(s => ({ html: escape(s), images: [] })),
 		})),
 	};
 }

@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use zipp::axum::body::{Body, to_bytes};
 use zipp::axum::http::{Request, header};
-use zipp::entries::api::CreateReq;
+use zipp::entries::api::{AuthorReq, CreateReq};
 use zipp::testing::{Client, TestServer, input};
 
 use crate::content::schema;
@@ -227,4 +227,164 @@ async fn a_member_logs_in_on_the_website_but_not_in_the_studio() {
 	assert!(err.to_string().contains("website"), "{err}");
 	let session = ts.with_token(token).get("/api/auth/session").await;
 	assert_ne!(session.status().as_u16(), 200);
+}
+
+const COOK_OF: &str = include_str!("../../svelte/src/queries/cookOf.graphql");
+const FOR_EDIT: &str =
+	include_str!("../../svelte/src/queries/recipeForEdit.graphql");
+
+/// A request of the website's editor (`/members/*` of the crelte
+/// server), its status and the json answer.
+async fn send(
+	client: &Client,
+	method: &str,
+	path: &str,
+	body: Value,
+) -> (u16, Value) {
+	let req = Request::builder()
+		.method(method)
+		.uri(path)
+		.header(header::CONTENT_TYPE, "application/json")
+		.body(Body::from(body.to_string()))
+		.unwrap();
+	let resp = client.send(req).await;
+	let status = resp.status().as_u16();
+	let body = to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+	(status, serde_json::from_slice(&body).unwrap_or_default())
+}
+
+#[tokio::test]
+async fn members_write_their_own_recipes() {
+	let ts = TestServer::new(schema());
+	let admin = ts.admin();
+	let mains = create(
+		&admin,
+		"categories",
+		"category",
+		"Main Courses",
+		json!({ "singular": "Main Course" }),
+	)
+	.await;
+	let lea = ts.site_user(Some("member"));
+	let (_, me) = send(&lea, "GET", "/site-auth/me", Value::Null).await;
+	let lea_id = me["user"]["id"].as_i64().unwrap();
+	// her public profile, she is its author
+	let cook = create(&admin, "cooks", "cook", "Léa Linster", json!({})).await;
+	admin
+		.call(&AuthorReq {
+			id: cook,
+			author_id: Some(lea_id),
+		})
+		.await
+		.unwrap();
+	let found = ts
+		.graphql(COOK_OF, json!({ "author": [lea_id], "siteId": [1] }))
+		.await;
+	assert_eq!(found["data"]["cook"]["id"], cook.to_string(), "{found}");
+
+	// the editor: an image, then the recipe as the website sends it
+	let resp = lea.upload("/members/assets", &[("dish.png", PNG)]).await;
+	let image: Value = Client::json(resp).await.unwrap();
+	let image = image["id"].as_i64().unwrap();
+	let fields = json!({
+		"category": [mains],
+		"cook": [cook],
+		"image": [image],
+		"serves": 2,
+		"totalTime": 40,
+		"activeTime": 20,
+		"chapters": [{ "type": "chapter", "fields": {
+			"title": "",
+			"ingredients": [
+				{ "amount": 2, "unit": "piece", "name": "Soles" },
+				{ "amount": null, "unit": "g", "name": "Butter" },
+			],
+			"steps": steps(&["Flour the soles.", "Fry them in butter."]),
+		} }],
+	});
+	let new = json!({
+		"section": "recipes",
+		"type": "recipe",
+		"title": "Sole Meunière",
+		"fields": fields,
+		"published": true,
+	});
+	let (status, entry) = send(&lea, "POST", "/members/entries", new).await;
+	assert_eq!(status, 200, "{entry}");
+	assert_eq!(entry["published"], true);
+	assert_eq!(entry["uri"], "recipes/sole-meunière");
+	let id = entry["id"].as_i64().unwrap();
+
+	// live at once, by her
+	let list = ts
+		.graphql(RECIPES, json!({ "cook": [cook.to_string()] }))
+		.await;
+	assert_eq!(list["data"]["recipes"][0]["title"], "Sole Meunière");
+	let page = ts
+		.graphql(ENTRY, json!({ "uri": [entry["uri"]], "siteId": [1] }))
+		.await;
+	assert_eq!(page["data"]["entry"]["authorId"], lea_id.to_string());
+	let copy = ts
+		.graphql(FOR_EDIT, json!({ "id": [id], "siteId": [1] }))
+		.await;
+	assert_eq!(copy["data"]["recipe"]["image"][0]["id"], image.to_string());
+
+	// a change replaces what it sends
+	let change = json!({ "title": "Sole Meunière", "fields": { "serves": 4 } });
+	let path = format!("/members/entries/{id}");
+	let (status, saved) = send(&lea, "PUT", &path, change.clone()).await;
+	assert_eq!((status, &saved["saved"]), (200, &json!("live")), "{saved}");
+	assert_eq!(saved["entry"]["fields"]["cook"], json!([cook]));
+
+	// invalid fields come back with their paths
+	let bad = json!({ "title": "Sole", "fields": { "serves": 0 } });
+	let (status, err) = send(&lea, "PUT", &path, bad).await;
+	assert_eq!(status, 400, "{err}");
+	assert_eq!(err["error"]["type"], "INVALID", "{err}");
+	assert_eq!(err["error"]["detail"][0]["path"], "serves", "{err}");
+
+	// another member can't read or change it
+	let mario = ts.site_user(Some("member"));
+	let (status, _) = send(&mario, "GET", &path, Value::Null).await;
+	assert_eq!(status, 403);
+	let (status, _) = send(&mario, "PUT", &path, change).await;
+	assert_eq!(status, 403);
+	let (status, _) = send(&mario, "DELETE", &path, Value::Null).await;
+	assert_eq!(status, 403);
+
+	// an admin on the website writes their own, without a cook: Anonymous
+	let admin_site = ts.site_user(None);
+	let mut fields = fields;
+	fields["cook"] = json!([]);
+	fields["image"] = json!([photo(&admin).await]);
+	let new = json!({
+		"section": "recipes",
+		"type": "recipe",
+		"title": "Rösti",
+		"fields": fields,
+		"published": true,
+	});
+	let (status, rosti) =
+		send(&admin_site, "POST", "/members/entries", new).await;
+	assert_eq!(status, 200, "{rosti}");
+	let rosti_path = format!("/members/entries/{}", rosti["id"]);
+	let change =
+		json!({ "title": "Rösti with egg", "fields": { "serves": 2 } });
+	let (status, saved) = send(&admin_site, "PUT", &rosti_path, change).await;
+	assert_eq!((status, &saved["saved"]), (200, &json!("live")), "{saved}");
+	let (_, mine) = send(
+		&admin_site,
+		"GET",
+		"/members/entries?section=recipes",
+		Value::Null,
+	)
+	.await;
+	assert_eq!(mine["entries"][0]["title"], "Rösti with egg", "{mine}");
+	assert_eq!(mine["total"], 1);
+
+	let (status, _) = send(&lea, "DELETE", &path, Value::Null).await;
+	assert_eq!(status, 200);
+	let list = ts.graphql(RECIPES, json!({})).await;
+	assert_eq!(list["data"]["total"], 1);
+	assert_eq!(list["data"]["recipes"][0]["cook"], json!([]));
 }

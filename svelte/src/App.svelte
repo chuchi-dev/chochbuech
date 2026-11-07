@@ -2,6 +2,7 @@
 	import { createStaticRouter, getStaticRouter } from 'crelte/static';
 	import { staticRoutes } from './routes.js';
 	import { loadSession } from './lib/session.svelte';
+	import globalQuery from './queries/global.graphql';
 
 	export const templates = import.meta.glob('@/templates/*.svelte');
 
@@ -12,11 +13,16 @@
 		staticRoutes(getStaticRouter(crelte));
 	}
 
-	// the user of the session cookie, only for the server render: the
-	// browser takes it from there (lib/session.svelte.ts)
+	// the globals (header, footer, categories) and the user of the session
+	// cookie, the latter only for the server render: the browser takes it
+	// from there (lib/session.svelte.ts)
 	/** @param {import('crelte').CrelteRequest} cr */
 	export async function loadGlobalData(cr) {
-		if (import.meta.env.SSR) await loadSession(cr);
+		const [globals] = await Promise.all([
+			cr.query(globalQuery),
+			import.meta.env.SSR ? loadSession(cr) : null,
+		]);
+		return globals;
 	}
 
 	/** @type {import('crelte').Config} */
@@ -37,7 +43,7 @@
 	import { setToasts } from './lib/toasts.svelte';
 
 	const session = setSession(getCrelte());
-	const mock = setMock(getCookies());
+	setMock(getCookies());
 	setToasts();
 
 	/** @type {import('crelte').AppProps} */
@@ -46,11 +52,6 @@
 	let entry = $derived($route.entry);
 	let Template = $derived($route.template.default);
 	let templateData = $derived($route.loadedData);
-
-	// the recipes written in this browser
-	$effect(() => {
-		mock.loadLocal();
-	});
 
 	// renews the session's cookie, the server render can't
 	onMount(() => {

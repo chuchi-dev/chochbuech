@@ -9,6 +9,7 @@
 <script>
 	import AccountLayout from '@/components/AccountLayout.svelte';
 	import { getMock } from '@/lib/mock.svelte';
+	import { getSession } from '@/lib/session.svelte';
 	import { formatAmount } from '@/lib/recipe';
 
 	// the week: a recipe per day (the cookie `chochbuech-planner`), and the
@@ -16,6 +17,7 @@
 	let { entry, recipes } = $props();
 
 	const mock = getMock();
+	const session = getSession();
 
 	const DAYS = [
 		['monday', 'Monday'],
@@ -31,14 +33,12 @@
 	let checked = $state([]);
 
 	let favorites = $derived(recipes.filter(r => mock.isFavorite(r.id)));
-	let own = $derived(mock.recipes.filter(r => !r.basedOn));
+	let own = $derived(
+		recipes.filter(r => r.authorId === String(session.user?.id)),
+	);
 
 	/** @param {string} id */
 	function recipeOf(id) {
-		if (id.startsWith('local-')) {
-			const l = mock.localRecipe(id);
-			return l && { ...l, url: `/my-recipes/${l.id}` };
-		}
 		return recipes.find(r => r.id === id) ?? null;
 	}
 
@@ -128,7 +128,7 @@
 									<optgroup label="My recipes">
 										{#each own as r (r.id)}
 											<option value={r.id}>
-												{r.title || 'Untitled'}
+												{r.title}
 											</option>
 										{/each}
 									</optgroup>
@@ -138,10 +138,6 @@
 										<option value={r.id}>{r.title}</option>
 									{/each}
 								</optgroup>
-								{#if id.startsWith('local-') && !recipe}
-									<!-- the local recipes load after the start -->
-									<option value={id}>…</option>
-								{/if}
 							</select>
 							{#if recipe}
 								<a class="open small" href={recipe.url}>

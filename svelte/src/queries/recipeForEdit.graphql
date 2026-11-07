@@ -1,16 +1,24 @@
-# a recipe of zipp to change in the editor
+# a recipe of zipp as the start of a new one: "Make it your own" of
+# someone else's recipe (their own ones the editor reads from
+# /members/entries, with the draft)
 query ($siteId: [QueryArgument], $id: [QueryArgument]) {
   recipe: entry(section: "recipes", siteId: $siteId, id: $id) {
     id
     title
     url
-    postDate @formatDateTime(format: "U")
     ... on recipe_Entry {
+      authorId
       serves
       totalTime
       activeTime
       category {
-        slug
+        id
+      }
+      image {
+        id
+        url(transform: "card")
+        width(transform: "card")
+        height(transform: "card")
       }
       chapters {
         ... on chapter_Block {
@@ -24,6 +32,11 @@ query ($siteId: [QueryArgument], $id: [QueryArgument]) {
             chunks {
               ... on Html {
                 html
+              }
+              ... on stepImage_Block {
+                image {
+                  id
+                }
               }
             }
           }

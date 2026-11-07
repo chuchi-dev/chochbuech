@@ -4,6 +4,7 @@
 use zipp::{
 	Access, Column, Field, Format, LinkKind, Role, Schema, Section, Transform,
 };
+use zipp_members::Members;
 use zipp_seo::{Seo, SeoDefaults, seo_field};
 
 /// The units of an ingredient's amount, `piece` shows the number alone.
@@ -32,8 +33,8 @@ pub fn schema() -> Schema {
 		.section(Section::channel("recipes", ["recipe"]).uri("recipes/{slug}"))
 		// the header's menu and the filters are in the order of the tree
 		.section(Section::structure("categories", ["category"]).max_level(1))
-		// the people behind the recipes, their public page; later the
-		// visitors who sign up
+		// the people behind the recipes, their public page; a member's is
+		// the cook they are the author of
 		.section(Section::channel("cooks", ["cook"]).uri("cooks/{slug}"))
 		.section(Section::single("header", "header"))
 		.section(Section::single("footer", "footer"))
@@ -42,11 +43,24 @@ pub fn schema() -> Schema {
 		.nav_icon("Content", "folder-open")
 		.nav_icon("Settings", "sliders-horizontal")
 		// the visitors with an account, they log in on the website only
-		// (no studio); writing their own recipes comes with entry authors
+		// (no studio) and write their own recipes there, live at once
 		.role(
 			Role::new("member", "Member")
-				.section("recipes", Access::View)
+				// only their own recipes: View of the section would let
+				// them read the others' unpublished ones on the website
+				.own("recipes", Access::Delete)
+				// what their recipes link to
+				.section("categories", Access::View)
+				.section("cooks", Access::View)
+				// the images of their recipes
+				.assets(Access::Edit)
 				.no_studio(),
+		)
+		// the website's editor: /members/* of the crelte server
+		.plugin(
+			Members::new()
+				.section("recipes")
+				.images(8 * 1024 * 1024, "Members/{user}"),
 		)
 		.plugin(
 			Seo::new()

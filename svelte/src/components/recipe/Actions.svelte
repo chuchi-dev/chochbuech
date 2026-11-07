@@ -6,8 +6,10 @@
 	import RoundButton from '../RoundButton.svelte';
 
 	// favorite, rate and change a recipe: the buttons on the image's edge.
-	// The star opens the five stars of the rating (Rating Toggle).
-	let { id, editUrl } = $props();
+	// The star opens the five stars of the rating (Rating Toggle). The
+	// sliders edit it for its author, else (admins too) they start a recipe
+	// of the user from it.
+	let { id, authorId } = $props();
 
 	const mock = getMock();
 	const session = getSession();
@@ -19,6 +21,11 @@
 
 	let favorite = $derived(id ? mock.isFavorite(id) : false);
 	let rated = $derived(id ? (mock.ratings[id] ?? 0) : 0);
+	let user = $derived(session.user);
+	let mine = $derived(!!user && String(user.id) === authorId);
+	let changeUrl = $derived(
+		mine ? `/recipes/edit/${id}` : `/recipes/copy/${id}`,
+	);
 
 	function signInFirst() {
 		if (session.user) return false;
@@ -71,10 +78,10 @@
 		{/if}
 		<RoundButton
 			icon="sliders"
-			label="Make it your own"
-			href={session.user
-				? editUrl
-				: `/sign-in?next=${encodeURIComponent(editUrl)}`}
+			label={mine ? 'Edit' : 'Make it your own'}
+			href={user
+				? changeUrl
+				: `/sign-in?next=${encodeURIComponent(changeUrl)}`}
 		/>
 	{/if}
 </div>

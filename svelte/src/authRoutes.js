@@ -77,13 +77,33 @@ async function cms(csr, path, opts) {
  * @param {(body: Record<string, unknown>, ip: string | null) => Promise<Response>} fn
  */
 async function post(csr, fn) {
-	const type = csr.req.headers.get('content-type') ?? '';
+	const body = await jsonFromThisSite(csr);
+	if (body instanceof Response) return body;
+	return fn(body, visitorIp(csr));
+}
+
+/**
+ * Whether a request that changes something comes from this site: the
+ * browser sends the origin, a form or script of another site can't fake
+ * it (against CSRF).
+ *
+ * @param {import('crelte/server').CrelteServerRequest} csr
+ */
+export function fromThisSite(csr) {
 	const origin = csr.req.headers.get('origin');
 	const origins = [csr.frontendUrl(), ...csr.sites.map(s => s.url)];
-	if (
-		!type.startsWith('application/json') ||
-		!origins.some(u => u.origin === origin)
-	) {
+	return origins.some(u => u.origin === origin);
+}
+
+/**
+ * The JSON object of a request from this site, or the error to answer.
+ *
+ * @param {import('crelte/server').CrelteServerRequest} csr
+ * @returns {Promise<Record<string, unknown> | Response>}
+ */
+export async function jsonFromThisSite(csr) {
+	const type = csr.req.headers.get('content-type') ?? '';
+	if (!type.startsWith('application/json') || !fromThisSite(csr)) {
 		return error(403, 'Not allowed');
 	}
 	/** @type {unknown} */
@@ -94,7 +114,7 @@ async function post(csr, fn) {
 		return error(400, 'The request is no JSON');
 	}
 	if (!body || typeof body !== 'object') return error(400, 'Not an object');
-	return fn(/** @type {Record<string, unknown>} */ (body), visitorIp(csr));
+	return /** @type {Record<string, unknown>} */ (body);
 }
 
 /**
@@ -132,7 +152,7 @@ async function login(csr, resp) {
  * @param {Response} resp
  * @param {unknown} ok
  */
-async function answer(resp, ok) {
+export async function answer(resp, ok) {
 	if (resp.ok) return Response.json(ok);
 	const text = await resp.text();
 	let body;
@@ -145,7 +165,7 @@ async function answer(resp, ok) {
 }
 
 /** @param {number} status @param {string} message */
-function error(status, message) {
+export function error(status, message) {
 	return Response.json({ message }, { status });
 }
 
