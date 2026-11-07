@@ -1,9 +1,10 @@
-# the list of recipes: search, category filter and pages for Load More
+# the list of recipes: search, category filter, a cook's recipes ($author,
+# a user id) and pages for Load More
 query (
   $siteId: [QueryArgument]
   $search: String
   $category: [QueryArgument]
-  $cook: [QueryArgument]
+  $author: [QueryArgument]
   $limit: Int
   $offset: Int
 ) {
@@ -12,7 +13,7 @@ query (
     siteId: $siteId
     search: $search
     category: $category
-    cook: $cook
+    authorId: $author
     limit: $limit
     offset: $offset
   ) {
@@ -31,8 +32,9 @@ query (
           singular
         }
       }
-      cook {
-        title
+      author {
+        id
+        name
         url
       }
       image {
@@ -49,6 +51,6 @@ query (
     siteId: $siteId
     search: $search
     category: $category
-    cook: $cook
+    authorId: $author
   )
 }

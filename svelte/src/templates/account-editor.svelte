@@ -14,7 +14,6 @@
 <script>
 	import { untrack } from 'svelte';
 	import { getCrelte, getGlobal, getRoute, getRouter } from 'crelte';
-	import cookQuery from '@/queries/cookOf.graphql';
 	import Button from '@/components/Button.svelte';
 	import Icon from '@/components/Icon.svelte';
 	import ChapterCard from '@/components/editor/ChapterCard.svelte';
@@ -80,20 +79,13 @@
 	let refused = $state({});
 	let tried = $state(false);
 	let saving = $state(false);
-	// the user's public profile, the cook of what they write
-	/** @type {{ id: string, title: string } | null} */
-	let cook = $state(null);
-	/** @type {Promise<unknown> | null} */
-	let cookLoaded = null;
+	let started = false;
 
-	// the fields of the recipe to change, and the cook of the user
+	// the fields of the recipe to change
 	$effect(() => {
 		const user = session.user;
-		if (!user || cookLoaded) return;
-		cookLoaded = crelte
-			.query(cookQuery, { author: [user.id] })
-			.then(data => (cook = /** @type {any} */ (data).cook ?? null))
-			.catch(() => {});
+		if (!user || started) return;
+		started = true;
 		if (!editing) return;
 		// only its author edits a recipe, admins too (zipp would let them)
 		if (live && live.authorId !== String(user.id)) {
@@ -186,13 +178,8 @@
 		}
 
 		saving = true;
-		await cookLoaded;
 		const snap = $state.snapshot(form);
 		const fields = toFields(snap);
-		// the user's cook (none: anonymous); a change keeps the recipe's
-		// cook when the user has none
-		if (!editing) fields.cook = cook ? [Number(cook.id)] : [];
-		else if (cook) fields.cook = [Number(cook.id)];
 		try {
 			if (editing) {
 				const id = Number(recipeId);

@@ -10,6 +10,7 @@ use crate::content::schema;
 
 const RECIPES: &str = include_str!("../../svelte/src/queries/recipes.graphql");
 const ENTRY: &str = include_str!("../../svelte/src/queries/entry.graphql");
+const COOK: &str = include_str!("../../svelte/src/queries/cook.graphql");
 
 // a 1x1 png
 const PNG: &[u8] = &[
@@ -50,6 +51,24 @@ fn steps(paragraphs: &[&str]) -> Value {
 	json!({ "type": "doc", "content": content })
 }
 
+/// A member logged in on the website with their name, and their id.
+async fn member(ts: &TestServer, name: &str) -> (Client, i64) {
+	let client = ts.site_user(Some("member"));
+	let (status, me) =
+		send(&client, "PUT", "/site-auth/me", json!({ "name": name })).await;
+	assert_eq!(status, 200, "{me}");
+	(client, me["id"].as_i64().unwrap())
+}
+
+/// Makes `author` the author of the entry, `None` Anonymous.
+async fn set_author(admin: &Client, id: i64, author: Option<i64>) {
+	let req = AuthorReq {
+		id,
+		author_id: author,
+	};
+	admin.call(&req).await.unwrap();
+}
+
 #[tokio::test]
 async fn the_list_searches_and_filters_by_category() {
 	let ts = TestServer::new(schema());
@@ -70,18 +89,10 @@ async fn the_list_searches_and_filters_by_category() {
 		json!({ "singular": "Drink" }),
 	)
 	.await;
-	let lea = create(
-		&admin,
-		"cooks",
-		"cook",
-		"Léa Linster",
-		json!({ "memberSince": 2024 }),
-	)
-	.await;
-	let recipe = |category: i64, cook: Option<i64>| {
+	let (_, lea) = member(&ts, "Léa Linster").await;
+	let recipe = |category: i64| {
 		json!({
 			"category": [category],
-			"cook": cook.map(|c| vec![c]).unwrap_or_default(),
 			"serves": 2,
 			"chapters": [{ "type": "chapter", "fields": {
 				"ingredients": [{ "amount": 2.0, "unit": "piece", "name": "Soles" }],
@@ -89,30 +100,17 @@ async fn the_list_searches_and_filters_by_category() {
 			} }],
 		})
 	};
-	create(
-		&admin,
-		"recipes",
-		"recipe",
-		"Sole Meunière",
-		recipe(mains, Some(lea)),
-	)
-	.await;
-	create(
-		&admin,
-		"recipes",
-		"recipe",
-		"Spaghetti with pea pesto",
-		recipe(mains, None),
-	)
-	.await;
-	create(
-		&admin,
-		"recipes",
-		"recipe",
-		"Bee's Knees Highball",
-		recipe(drinks, None),
-	)
-	.await;
+	let sole =
+		create(&admin, "recipes", "recipe", "Sole Meunière", recipe(mains))
+			.await;
+	set_author(&admin, sole, Some(lea)).await;
+	let title = "Spaghetti with pea pesto";
+	let pasta = create(&admin, "recipes", "recipe", title, recipe(mains)).await;
+	set_author(&admin, pasta, None).await;
+	let title = "Bee's Knees Highball";
+	let drink =
+		create(&admin, "recipes", "recipe", title, recipe(drinks)).await;
+	set_author(&admin, drink, None).await;
 
 	let titles = |data: &Value| -> Vec<String> {
 		data["data"]["recipes"]
@@ -136,13 +134,86 @@ async fn the_list_searches_and_filters_by_category() {
 	let found = ts.graphql(RECIPES, json!({ "search": "meuni" })).await;
 	assert_eq!(titles(&found), ["Sole Meunière"]);
 	let by_lea = ts
-		.graphql(RECIPES, json!({ "cook": [lea.to_string()] }))
+		.graphql(RECIPES, json!({ "author": [lea.to_string()] }))
 		.await;
 	assert_eq!(titles(&by_lea), ["Sole Meunière"]);
+	let card = &by_lea["data"]["recipes"][0];
+	assert_eq!(card["category"][0]["singular"], "Main Course");
+	// the card's "by" links to her page, Anonymous without an author
+	assert_eq!(card["author"]["name"], "Léa Linster");
+	let url = card["author"]["url"].as_str().unwrap();
+	assert!(url.ends_with("/cooks/léa-linster"), "{url}");
+	let drinks_only = ts
+		.graphql(RECIPES, json!({ "category": [drinks.to_string()] }))
+		.await;
+	assert_eq!(drinks_only["data"]["recipes"][0]["author"], Value::Null);
+}
+
+#[tokio::test]
+async fn the_cooks_are_the_members_with_a_live_recipe() {
+	let ts = TestServer::new(schema());
+	let admin = ts.admin();
+	let mains = create(
+		&admin,
+		"categories",
+		"category",
+		"Main Courses",
+		json!({ "singular": "Main Course" }),
+	)
+	.await;
+	let (lea, lea_id) = member(&ts, "Léa Linster").await;
+	let (_, mario_id) = member(&ts, "Mario Bernasconi").await;
+	let fields = json!({ "category": [mains], "serves": 2 });
+	let sole = create(&admin, "recipes", "recipe", "Sole", fields).await;
+	set_author(&admin, sole, Some(lea_id)).await;
+
+	// she edits her profile on the website
+	let profile =
+		json!({ "fields": { "bio": "Fish on Fridays.", "memberSince": 2024 } });
+	let (status, me) = send(&lea, "PUT", "/site-auth/me", profile).await;
+	assert_eq!(status, 200, "{me}");
+	assert_eq!(me["slug"], "léa-linster");
+	assert_eq!(me["name"], "Léa Linster");
+	// the slug is an admin's
+	let slug = json!({ "slug": "lea" });
+	let (status, _) = send(&lea, "PUT", "/site-auth/me", slug).await;
+	assert_eq!(status, 400);
+
+	let vars = json!({ "slug": "léa-linster", "siteId": [1] });
+	let page = ts.graphql(COOK, vars).await;
+	let cook = &page["data"]["cook"];
+	assert_eq!(cook["id"], lea_id.to_string(), "{page}");
+	assert_eq!(cook["bio"], "Fish on Fridays.");
+	assert_eq!(cook["memberSince"], 2024.0);
+	let users = ts
+		.graphql(
+			"{ users(hasEntries: { section: \"recipes\" }) { id } userCount }",
+			json!({}),
+		)
+		.await;
 	assert_eq!(
-		by_lea["data"]["recipes"][0]["category"][0]["singular"],
-		"Main Course"
+		users["data"]["users"],
+		json!([{ "id": lea_id.to_string() }])
 	);
+	assert_eq!(users["data"]["userCount"], 1);
+
+	// Mario has no recipe: no page
+	let page = ts
+		.graphql(COOK, json!({ "slug": "mario-bernasconi", "siteId": [1] }))
+		.await;
+	assert_eq!(page["data"]["cook"], Value::Null, "{page}");
+	let by_id = format!("{{ user(id: {mario_id}) {{ name }} }}");
+	let user = ts.graphql(&by_id, json!({})).await;
+	assert_eq!(user["data"]["user"], Value::Null);
+
+	// neither has Léa once her recipe is gone
+	let path = format!("/members/entries/{sole}");
+	let (status, _) = send(&lea, "DELETE", &path, Value::Null).await;
+	assert_eq!(status, 200);
+	let page = ts
+		.graphql(COOK, json!({ "slug": "léa-linster", "siteId": [1] }))
+		.await;
+	assert_eq!(page["data"]["cook"], Value::Null, "{page}");
 }
 
 #[tokio::test]
@@ -229,7 +300,6 @@ async fn a_member_logs_in_on_the_website_but_not_in_the_studio() {
 	assert_ne!(session.status().as_u16(), 200);
 }
 
-const COOK_OF: &str = include_str!("../../svelte/src/queries/cookOf.graphql");
 const FOR_EDIT: &str =
 	include_str!("../../svelte/src/queries/recipeForEdit.graphql");
 
@@ -265,22 +335,7 @@ async fn members_write_their_own_recipes() {
 		json!({ "singular": "Main Course" }),
 	)
 	.await;
-	let lea = ts.site_user(Some("member"));
-	let (_, me) = send(&lea, "GET", "/site-auth/me", Value::Null).await;
-	let lea_id = me["user"]["id"].as_i64().unwrap();
-	// her public profile, she is its author
-	let cook = create(&admin, "cooks", "cook", "Léa Linster", json!({})).await;
-	admin
-		.call(&AuthorReq {
-			id: cook,
-			author_id: Some(lea_id),
-		})
-		.await
-		.unwrap();
-	let found = ts
-		.graphql(COOK_OF, json!({ "author": [lea_id], "siteId": [1] }))
-		.await;
-	assert_eq!(found["data"]["cook"]["id"], cook.to_string(), "{found}");
+	let (lea, lea_id) = member(&ts, "Léa Linster").await;
 
 	// the editor: an image, then the recipe as the website sends it
 	let resp = lea.upload("/members/assets", &[("dish.png", PNG)]).await;
@@ -288,7 +343,6 @@ async fn members_write_their_own_recipes() {
 	let image = image["id"].as_i64().unwrap();
 	let fields = json!({
 		"category": [mains],
-		"cook": [cook],
 		"image": [image],
 		"serves": 2,
 		"totalTime": 40,
@@ -317,13 +371,15 @@ async fn members_write_their_own_recipes() {
 
 	// live at once, by her
 	let list = ts
-		.graphql(RECIPES, json!({ "cook": [cook.to_string()] }))
+		.graphql(RECIPES, json!({ "author": [lea_id.to_string()] }))
 		.await;
 	assert_eq!(list["data"]["recipes"][0]["title"], "Sole Meunière");
 	let page = ts
 		.graphql(ENTRY, json!({ "uri": [entry["uri"]], "siteId": [1] }))
 		.await;
-	assert_eq!(page["data"]["entry"]["authorId"], lea_id.to_string());
+	let recipe = &page["data"]["entry"];
+	assert_eq!(recipe["authorId"], lea_id.to_string());
+	assert_eq!(recipe["author"]["name"], "Léa Linster");
 	let copy = ts
 		.graphql(FOR_EDIT, json!({ "id": [id], "siteId": [1] }))
 		.await;
@@ -334,7 +390,6 @@ async fn members_write_their_own_recipes() {
 	let path = format!("/members/entries/{id}");
 	let (status, saved) = send(&lea, "PUT", &path, change.clone()).await;
 	assert_eq!((status, &saved["saved"]), (200, &json!("live")), "{saved}");
-	assert_eq!(saved["entry"]["fields"]["cook"], json!([cook]));
 
 	// invalid fields come back with their paths
 	let bad = json!({ "title": "Sole", "fields": { "serves": 0 } });
@@ -352,10 +407,9 @@ async fn members_write_their_own_recipes() {
 	let (status, _) = send(&mario, "DELETE", &path, Value::Null).await;
 	assert_eq!(status, 403);
 
-	// an admin on the website writes their own, without a cook: Anonymous
+	// an admin on the website writes their own, by them
 	let admin_site = ts.site_user(None);
 	let mut fields = fields;
-	fields["cook"] = json!([]);
 	fields["image"] = json!([photo(&admin).await]);
 	let new = json!({
 		"section": "recipes",
@@ -386,5 +440,5 @@ async fn members_write_their_own_recipes() {
 	assert_eq!(status, 200);
 	let list = ts.graphql(RECIPES, json!({})).await;
 	assert_eq!(list["data"]["total"], 1);
-	assert_eq!(list["data"]["recipes"][0]["cook"], json!([]));
+	assert_eq!(list["data"]["recipes"][0]["title"], "Rösti with egg");
 }

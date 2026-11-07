@@ -3,6 +3,7 @@
 
 use zipp::{
 	Access, Column, Field, Format, LinkKind, Role, Schema, Section, Transform,
+	UserPages,
 };
 use zipp_members::Members;
 use zipp_seo::{Seo, SeoDefaults, seo_field};
@@ -33,15 +34,25 @@ pub fn schema() -> Schema {
 		.section(Section::channel("recipes", ["recipe"]).uri("recipes/{slug}"))
 		// the header's menu and the filters are in the order of the tree
 		.section(Section::structure("categories", ["category"]).max_level(1))
-		// the people behind the recipes, their public page; a member's is
-		// the cook they are the author of
-		.section(Section::channel("cooks", ["cook"]).uri("cooks/{slug}"))
 		.section(Section::single("header", "header"))
 		.section(Section::single("footer", "footer"))
-		.nav("Content", ["pages", "recipes", "categories", "cooks"])
+		.nav("Content", ["pages", "recipes", "categories"])
 		.nav("Settings", ["header", "footer", "seoSettings"])
 		.nav_icon("Content", "folder-open")
 		.nav_icon("Settings", "sliders-horizontal")
+		// the cooks are the users: a recipe is by its author, whose public
+		// page is theirs while they have a live recipe (WordPress' author
+		// pages); a member edits their profile on the website
+		.user_fields([
+			Field::number("memberSince")
+				.range(2000.0, 2100.0)
+				.decimals(0)
+				.label("Member since")
+				.width(25),
+			Field::text("bio").multiline(),
+			Field::images("photo").max(1),
+		])
+		.user_pages(UserPages::new("cooks/{slug}").with_entries_in("recipes"))
 		// the visitors with an account, they log in on the website only
 		// (no studio) and write their own recipes there, live at once
 		.role(
@@ -51,7 +62,6 @@ pub fn schema() -> Schema {
 				.own("recipes", Access::Delete)
 				// what their recipes link to
 				.section("categories", Access::View)
-				.section("cooks", Access::View)
 				// the images of their recipes
 				.assets(Access::Edit)
 				.no_studio(),
@@ -63,14 +73,12 @@ pub fn schema() -> Schema {
 				.images(8 * 1024 * 1024, "Members/{user}"),
 		)
 		.plugin(
-			Seo::new()
-				.entry_type(
-					"recipe",
-					SeoDefaults::new()
-						.title_pattern("{title} | {siteName}")
-						.image_from("image"),
-				)
-				.entry_type("cook", SeoDefaults::new().description_from("bio")),
+			Seo::new().entry_type(
+				"recipe",
+				SeoDefaults::new()
+					.title_pattern("{title} | {siteName}")
+					.image_from("image"),
+			),
 		)
 		// the cards of the lists are 3:4
 		.transform(
@@ -169,11 +177,6 @@ pub fn schema() -> Schema {
 							.max(1)
 							.required()
 							.width(50),
-						Field::relation("cook", ["cook"])
-							.max(1)
-							.label("By")
-							.instructions("Empty: Anonymous.")
-							.width(50),
 						Field::images("image")
 							.max(1)
 							.required()
@@ -222,18 +225,6 @@ pub fn schema() -> Schema {
 			[Field::text("singular")
 				.required()
 				.instructions("One of them: *Main Course by …* on the cards.")],
-		)
-		.entry(
-			"cook",
-			"Cook",
-			[
-				Field::number("memberSince")
-					.range(2000.0, 2100.0)
-					.decimals(0)
-					.label("Member since")
-					.width(25),
-				Field::text("bio").multiline(),
-			],
 		)
 		.entry(
 			"header",
@@ -318,7 +309,6 @@ pub fn schema() -> Schema {
 		.icon("recipes", "list")
 		.icon("recipe", "chef-hat")
 		.icon("category", "tag")
-		.icon("cook", "user-round")
 		.icon("chapter", "list-ordered")
 		.icon("stepImage", "image")
 		.icon("recipeRow", "gallery-horizontal")
@@ -327,5 +317,4 @@ pub fn schema() -> Schema {
 		.block_title("chapter", "title")
 		.block_title("recipeRow", "marquee")
 		.block_title("feature", "title")
-		.entry_card("cook")
 }

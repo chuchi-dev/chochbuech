@@ -1,12 +1,15 @@
 <script>
 	import Stars from './Stars.svelte';
 
-	// a recipe of the lists: image 3:4, title, category and cook, rating
+	// a recipe of the lists: image 3:4, title, category and author (the
+	// cook, Anonymous without a public one), rating
 	let { recipe, sizes = '(max-width: 767px) 100vw, 20rem' } = $props();
 
 	let img = $derived(recipe.image?.[0] ?? null);
 	let category = $derived(recipe.category?.[0] ?? null);
-	let cook = $derived(recipe.cook?.[0] ?? null);
+	let author = $derived(
+		recipe.author?.url && recipe.author.name ? recipe.author : null,
+	);
 </script>
 
 <article class="card">
@@ -26,8 +29,8 @@
 	<h3 class="title"><a href={recipe.url}>{recipe.title}</a></h3>
 	<p class="meta">
 		{category?.singular ?? category?.title ?? 'Recipe'} by
-		{#if cook}
-			<a href={cook.url}>{cook.title}</a>
+		{#if author}
+			<a href={author.url}>{author.name}</a>
 		{:else}
 			Anonymous
 		{/if}

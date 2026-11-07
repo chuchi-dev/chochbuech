@@ -1,0 +1,16 @@
+# the public page of a cook: a user with a live recipe (null for the
+# others), their recipes are recipes.graphql with $author
+query ($siteId: [QueryArgument], $slug: String!) {
+  cook: user(slug: $slug, siteId: $siteId) {
+    id
+    name
+    slug
+    url
+    memberSince
+    bio
+    photo {
+      url(transform: "thumb")
+      alt
+    }
+  }
+}

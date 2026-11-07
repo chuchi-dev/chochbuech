@@ -32,7 +32,7 @@
 			{#if recipe.cookUrl}
 				<a href={recipe.cookUrl}>{recipe.cook}</a>
 			{:else}
-				{recipe.cook ?? 'Anonymous'}
+				Anonymous
 			{/if}
 		</p>
 		<h1 class="h1"><i>{recipe.title}</i></h1>

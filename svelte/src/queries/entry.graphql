@@ -38,8 +38,9 @@ query ($uri: [String], $siteId: [QueryArgument]) {
                   singular
                 }
               }
-              cook {
-                title
+              author {
+                id
+                name
                 url
               }
               image {
@@ -99,9 +100,9 @@ query ($uri: [String], $siteId: [QueryArgument]) {
           singular
         }
       }
-      cook {
+      author {
         id
-        title
+        name
         url
       }
       image {
@@ -137,10 +138,6 @@ query ($uri: [String], $siteId: [QueryArgument]) {
           }
         }
       }
-    }
-    ... on cook_Entry {
-      memberSince
-      bio
     }
   }
 }

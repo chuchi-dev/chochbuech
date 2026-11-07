@@ -359,7 +359,7 @@ export function validate(form: Form): Errors {
 	return errors;
 }
 
-/** The fields of the recipe for zipp; the cook is the editor's. */
+/** The fields of the recipe for zipp; its cook is its author. */
 export function toFields(form: Form): Record<string, unknown> {
 	return {
 		category: form.category ? [Number(form.category)] : [],

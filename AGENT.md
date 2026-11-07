@@ -34,6 +34,9 @@ Read `README.md` first. The backend is zipp (`cms/`), the website crelte
   editor) are routes of
   crelte's static router in `svelte/src/routes.js` with the section
   `account`; adding a template file needs a restart of the vite dev server.
+  The cooks are zipp's users, not entries: `/cooks/:slug` is a static
+  route too (`cooks-cook.svelte`), see Cooks in `README.md`; a recipe's
+  cook is its `author`.
 - Queries are self-contained files in `svelte/src/queries/` (no fragments
   across files); crelte runs them on its node server by name, so the client
   can call them too (`getCrelte().query(...)`).

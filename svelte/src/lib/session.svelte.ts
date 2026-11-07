@@ -61,6 +61,16 @@ export class Session {
 		this.user = null;
 	}
 
+	/** Changes the user's own profile, the fields it sends. */
+	async updateProfile(
+		name: string,
+		fields: { bio: string; photo: number[] },
+	): Promise<User> {
+		const { user } = await call('me', { name, fields }, 'PUT');
+		this.user = user;
+		return user;
+	}
+
 	/** Reads the user again, renews the session and its cookie. */
 	async refresh(): Promise<void> {
 		const { user } = await call('me');
@@ -68,9 +78,9 @@ export class Session {
 	}
 }
 
-async function call(path: string, body?: unknown) {
+async function call(path: string, body?: unknown, method?: string) {
 	const resp = await fetch('/auth/' + path, {
-		method: body === undefined ? 'GET' : 'POST',
+		method: method ?? (body === undefined ? 'GET' : 'POST'),
 		headers:
 			body === undefined ? {} : { 'content-type': 'application/json' },
 		body: body === undefined ? undefined : JSON.stringify(body),

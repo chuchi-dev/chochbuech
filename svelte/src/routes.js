@@ -1,7 +1,10 @@
 // The pages of the frontend that are no entries of zipp: signing in, the
 // account and the editor. Logging in and the recipes are zipp's, favorites,
 // ratings and the planner mocks (see lib/mock.svelte.ts); their template
-// is `account-<type>.svelte`.
+// is `account-<type>.svelte`. And the cooks: zipp's users with a live
+// recipe, `cooks-cook.svelte`.
+
+import cookQuery from './queries/cook.graphql';
 
 /** @param {string} typeHandle @param {string} title */
 const page = (typeHandle, title) => () => ({
@@ -33,7 +36,23 @@ export function staticRoutes(router) {
 			typeHandle: 'editor',
 			title: 'New Recipe',
 			copyOf: csr.getParam('id'),
-		}));
+		}))
+		// the public page of a cook, a user with a live recipe: their
+		// uri in zipp (user pages, the `url` of a recipe's author)
+		.add('/cooks/:slug', async csr => {
+			const slug = decodeURIComponent(csr.getParam('slug') ?? '');
+			const data = /** @type {any} */ (
+				await csr.query(cookQuery, { slug })
+			);
+			if (!data.cook)
+				return { sectionHandle: 'error', typeHandle: '404' };
+			return {
+				sectionHandle: 'cooks',
+				typeHandle: 'cook',
+				title: data.cook.name,
+				cook: data.cook,
+			};
+		});
 }
 
 /** The links of the account navigation. */

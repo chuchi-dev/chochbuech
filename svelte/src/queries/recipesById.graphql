@@ -16,8 +16,9 @@ query ($siteId: [QueryArgument], $ids: [QueryArgument]) {
           singular
         }
       }
-      cook {
-        title
+      author {
+        id
+        name
         url
       }
       image {

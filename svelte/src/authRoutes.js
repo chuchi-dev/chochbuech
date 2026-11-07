@@ -43,6 +43,35 @@ export function authRoutes(router) {
 				return withCookie(Response.json({}), csr, '', 0);
 			}),
 		)
+		// the user's own profile: their name, bio and photo (an image of
+		// /members/assets); the cms answers with the user
+		.put('/auth/me', csr =>
+			post(csr, async body => {
+				const token = csr.cookies.get(SESSION_COOKIE);
+				if (!token) return error(401, 'Please sign in first.');
+				const fields = /** @type {Record<string, unknown>} */ (
+					body.fields && typeof body.fields === 'object'
+						? body.fields
+						: {}
+				);
+				const req = {
+					name: str(body.name),
+					fields: {
+						bio: str(fields.bio),
+						photo: Array.isArray(fields.photo)
+							? fields.photo.filter(Number.isInteger).slice(0, 1)
+							: [],
+					},
+				};
+				const resp = await cms(csr, 'me', {
+					token,
+					body: req,
+					method: 'PUT',
+				});
+				if (!resp.ok) return answer(resp, null);
+				return Response.json({ user: await resp.json() });
+			}),
+		)
 		// the user of the session, renews it (and the cookie)
 		.get('/auth/me', async csr => {
 			const token = csr.cookies.get(SESSION_COOKIE);
@@ -58,7 +87,7 @@ export function authRoutes(router) {
 /**
  * @param {import('crelte/server').CrelteServerRequest} csr
  * @param {string} path
- * @param {{ token?: string, body?: unknown, ip?: string | null }} opts
+ * @param {{ token?: string, body?: unknown, ip?: string | null, method?: string }} opts
  */
 async function cms(csr, path, opts) {
 	try {

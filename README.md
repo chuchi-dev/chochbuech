@@ -8,7 +8,8 @@ own creations. Live at [chochbuech.com](https://chochbuech.com).
 
 - `cms/`: the backend, [zipp](https://github.com/zipp-cms/zipp-next), a
   headless CMS whose content model is Rust code (`cms/src/content.rs`).
-  Recipes, categories, cooks and the pages are edited in its studio.
+  Recipes, categories, the pages and the users (the cooks) are edited in
+  its studio.
 - `svelte/`: the website, a [crelte](https://github.com/crelte/crelte)
   (Svelte 5, SSR) project that reads zipp over GraphQL.
 - `craft/.env`: crelte reads its settings from there (there is no Craft).
@@ -22,7 +23,9 @@ weekly planner are a mock in the browser for now, see
 
 The browser posts to `/auth/login`, `/auth/logout`, `/auth/reset`
 (mails a link to `/reset-password?token=…`) and `/auth/password` (sets the
-password of a reset or invite link) and reads `GET /auth/me`. These are
+password of a reset or invite link), reads `GET /auth/me` and changes the
+user's profile with `PUT /auth/me` (`{ name, fields: { bio, photo } }`,
+the account page). These are
 routes of the crelte server (`svelte/src/authRoutes.js`): they only take
 JSON from the site's own origin, forward to the cms's `/site-auth/*` with
 the visitor's address in `X-Forwarded-For` and keep the session token in
@@ -47,12 +50,26 @@ user changes only the recipes they wrote, admins (who can log in on the
 website too) as well: on someone else's recipe everybody gets Make it
 your own. zipp would let admins edit all of them, the website doesn't.
 
-A member's cook (their public profile, the "by" of their recipes) is the
-cooks entry they are the author of (`cookOf.graphql`); the editor sets it
-on their recipes (a user without one writes as Anonymous). "Make it
-your own" on someone else's recipe (`/recipes/copy/<id>`) starts a new
-recipe from it, with its photo. An admin creates the member and their
-cook in the studio and sets the cook's author there.
+"Make it your own" on someone else's recipe (`/recipes/copy/<id>`)
+starts a new recipe from it, with its photo. An admin creates the member
+in the studio.
+
+### Cooks
+
+The cook of a recipe is always its author, like WordPress' author pages:
+zipp's users have a profile (the user fields `bio`, `photo` and
+`memberSince` in `cms/src/content.rs`, their name and a slug) and a page
+`/cooks/<slug>` while a recipe of theirs is live, so admins and new
+members are on no page. GraphQL gives the recipe's `author` (`url` only
+while they are public; the cards and the recipe show Anonymous without
+one) and `user(slug:)` (`cook.graphql`), their recipes are
+`recipes.graphql` with `$author`. The page is a route of crelte's static
+router (`svelte/src/routes.js`, template `cooks-cook.svelte`), a 404 for
+a user without a page. Members change their name, bio and photo on the
+account page; the slug and `memberSince` are an admin's, in the studio's
+user page. A recipe gets another author in the studio (admins). The
+users are only in GraphQL for `serve`'s token (`ZIPP_GRAPHQL_TOKEN`) or a
+token of the studio with users switched on.
 
 ### Local development
 

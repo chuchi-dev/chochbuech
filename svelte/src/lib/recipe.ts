@@ -50,6 +50,7 @@ export type ViewRecipe = {
 	authorId: string | null;
 	title: string;
 	category: string | null;
+	// the author's name and page, Anonymous without a public author
 	cook: string | null;
 	cookUrl: string | null;
 	rating: number | null;
@@ -82,13 +83,15 @@ function zippSteps(chunks: any[] | undefined) {
 }
 
 export function fromZipp(entry: any): ViewRecipe {
-	const cook = entry.cook?.[0] ?? null;
+	// the author is the cook while they are public (have a page) and
+	// have a name
+	const cook = entry.author?.url && entry.author.name ? entry.author : null;
 	return {
 		id: entry.id,
 		authorId: entry.authorId ?? null,
 		title: entry.title,
 		category: entry.category?.[0]?.singular ?? null,
-		cook: cook?.title ?? null,
+		cook: cook?.name ?? null,
 		cookUrl: cook?.url ?? null,
 		rating: entry.rating,
 		serves: entry.serves ?? 4,

@@ -12,6 +12,11 @@ export type User = {
 	email: string;
 	// null is an admin of the studio
 	role: string | null;
+	// of their page `/cooks/<slug>`, which they have while a recipe of
+	// theirs is live
+	slug: string;
+	// the user fields of the cms: bio, photo (asset ids), memberSince
+	fields: { bio?: string; photo?: number[]; memberSince?: number };
 };
 
 /** The answer of login, me and password: the session and its user. */
@@ -21,21 +26,26 @@ export type SiteAuth = {
 };
 
 /**
- * A request to the cms's `/site-auth/<path>`. `ip` is the visitor's
- * address for the cms's limit of wrong passwords, the cms trusts it from
- * this server (`serve --trusted-proxy`).
+ * A request to the cms's `/site-auth/<path>`, a POST with a body. `ip` is
+ * the visitor's address for the cms's limit of wrong passwords, the cms
+ * trusts it from this server (`serve --trusted-proxy`).
  */
 export function siteAuth(
 	backend: (path: string) => URL,
 	path: string,
-	opts: { token?: string | null; body?: unknown; ip?: string | null } = {},
+	opts: {
+		token?: string | null;
+		body?: unknown;
+		ip?: string | null;
+		method?: string;
+	} = {},
 ): Promise<Response> {
 	const headers: Record<string, string> = {};
 	if (opts.token) headers['authorization'] = `Bearer ${opts.token}`;
 	if (opts.ip) headers['x-forwarded-for'] = opts.ip;
 	if (opts.body !== undefined) headers['content-type'] = 'application/json';
 	return fetch(backend('/site-auth/' + path), {
-		method: opts.body === undefined ? 'GET' : 'POST',
+		method: opts.method ?? (opts.body === undefined ? 'GET' : 'POST'),
 		headers,
 		body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
 	});

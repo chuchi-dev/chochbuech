@@ -4,6 +4,48 @@
     {
       "op": "addComponent",
       "component": {
+        "handle": "user",
+        "name": "User",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "memberSince",
+            "label": "Member since",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 2000.0,
+            "max": 2100.0,
+            "decimals": 0
+          },
+          {
+            "handle": "bio",
+            "label": "Bio",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "photo",
+            "label": "Photo",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
         "handle": "seoSettings",
         "name": "SEO",
         "entry": true,
@@ -466,10 +508,6 @@
                 "label": "Section Recipes"
               },
               {
-                "value": "section:cooks",
-                "label": "Section Cooks"
-              },
-              {
                 "value": "type:home",
                 "label": "Entry type Home"
               },
@@ -484,10 +522,6 @@
               {
                 "value": "type:recipe",
                 "label": "Entry type Recipe"
-              },
-              {
-                "value": "type:cook",
-                "label": "Entry type Cook"
               }
             ]
           },
@@ -831,20 +865,6 @@
             "max": 1
           },
           {
-            "handle": "cook",
-            "label": "By",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "instructions": "Empty: Anonymous.",
-            "width": 50,
-            "kind": "relation",
-            "types": [
-              "cook"
-            ],
-            "max": 1
-          },
-          {
             "handle": "image",
             "label": "Image",
             "required": true,
@@ -928,7 +948,6 @@
             "name": "Recipe",
             "fields": [
               "category",
-              "cook",
               "image",
               "serves",
               "totalTime",
@@ -969,42 +988,6 @@
         ],
         "icon": {
           "lucide": "tag"
-        }
-      }
-    },
-    {
-      "op": "addComponent",
-      "component": {
-        "handle": "cook",
-        "name": "Cook",
-        "entry": true,
-        "fields": [
-          {
-            "handle": "memberSince",
-            "label": "Member since",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "width": 25,
-            "kind": "number",
-            "min": 2000.0,
-            "max": 2100.0,
-            "decimals": 0
-          },
-          {
-            "handle": "bio",
-            "label": "Bio",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "kind": "text",
-            "max": null,
-            "multiline": true
-          }
-        ],
-        "card": true,
-        "icon": {
-          "lucide": "user-round"
         }
       }
     },
@@ -1420,18 +1403,6 @@
     {
       "op": "addSection",
       "section": {
-        "handle": "cooks",
-        "name": "Cooks",
-        "kind": "channel",
-        "types": [
-          "cook"
-        ],
-        "uri": "cooks/{slug}"
-      }
-    },
-    {
-      "op": "addSection",
-      "section": {
         "handle": "header",
         "name": "Header",
         "kind": "single",
@@ -1509,15 +1480,6 @@
         "max_level": 1
       },
       {
-        "handle": "cooks",
-        "name": "Cooks",
-        "kind": "channel",
-        "types": [
-          "cook"
-        ],
-        "uri": "cooks/{slug}"
-      },
-      {
         "handle": "header",
         "name": "Header",
         "kind": "single",
@@ -1546,6 +1508,45 @@
       }
     ],
     "components": [
+      {
+        "handle": "user",
+        "name": "User",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "memberSince",
+            "label": "Member since",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 2000.0,
+            "max": 2100.0,
+            "decimals": 0
+          },
+          {
+            "handle": "bio",
+            "label": "Bio",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "photo",
+            "label": "Photo",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          }
+        ]
+      },
       {
         "handle": "seoSettings",
         "name": "SEO",
@@ -2003,10 +2004,6 @@
                 "label": "Section Recipes"
               },
               {
-                "value": "section:cooks",
-                "label": "Section Cooks"
-              },
-              {
                 "value": "type:home",
                 "label": "Entry type Home"
               },
@@ -2021,10 +2018,6 @@
               {
                 "value": "type:recipe",
                 "label": "Entry type Recipe"
-              },
-              {
-                "value": "type:cook",
-                "label": "Entry type Cook"
               }
             ]
           },
@@ -2362,20 +2355,6 @@
             "max": 1
           },
           {
-            "handle": "cook",
-            "label": "By",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "instructions": "Empty: Anonymous.",
-            "width": 50,
-            "kind": "relation",
-            "types": [
-              "cook"
-            ],
-            "max": 1
-          },
-          {
             "handle": "image",
             "label": "Image",
             "required": true,
@@ -2459,7 +2438,6 @@
             "name": "Recipe",
             "fields": [
               "category",
-              "cook",
               "image",
               "serves",
               "totalTime",
@@ -2497,39 +2475,6 @@
         ],
         "icon": {
           "lucide": "tag"
-        }
-      },
-      {
-        "handle": "cook",
-        "name": "Cook",
-        "entry": true,
-        "fields": [
-          {
-            "handle": "memberSince",
-            "label": "Member since",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "width": 25,
-            "kind": "number",
-            "min": 2000.0,
-            "max": 2100.0,
-            "decimals": 0
-          },
-          {
-            "handle": "bio",
-            "label": "Bio",
-            "required": false,
-            "indexed": false,
-            "translatable": false,
-            "kind": "text",
-            "max": null,
-            "multiline": true
-          }
-        ],
-        "card": true,
-        "icon": {
-          "lucide": "user-round"
         }
       },
       {
@@ -2921,8 +2866,7 @@
         "sections": [
           "pages",
           "recipes",
-          "categories",
-          "cooks"
+          "categories"
         ],
         "icon": {
           "lucide": "folder-open"
