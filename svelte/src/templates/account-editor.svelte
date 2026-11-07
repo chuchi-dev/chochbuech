@@ -414,7 +414,10 @@
 		padding: 0.75rem var(--sx-body);
 	}
 
+	// a flex item with auto margins would shrink to its content, so it
+	// takes the whole column
 	.content {
+		width: 100%;
 		padding-block: 5rem var(--sy-section);
 	}
 

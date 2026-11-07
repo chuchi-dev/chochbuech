@@ -98,13 +98,17 @@
 		}
 	}
 
+	// like the chip of ChipSelect
 	.chip {
+		display: flex;
+		height: 1.875rem;
 		flex-shrink: 0;
-		padding: 0 0.5rem;
+		align-items: center;
+		padding: 0 0.75rem;
 		border: 1px solid var(--accent);
 		border-radius: 999px;
-		font-size: 0.75rem;
-		line-height: 1.5;
+		font-size: 0.875rem;
+		line-height: 1;
 	}
 
 	.error {
@@ -118,6 +122,11 @@
 			height: 4rem;
 			padding-inline: 2rem;
 			font-size: 1.25rem;
+		}
+
+		.chip {
+			height: 2.125rem;
+			font-size: 1rem;
 		}
 	}
 </style>
