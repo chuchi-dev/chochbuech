@@ -1,12 +1,12 @@
-// Everything a visitor does is a mock for now: zipp has only the studio's
-// users. The session, favorites and ratings are cookies, so the server
-// renders them; the recipes a visitor writes are in localStorage (too big
-// for cookies) and only exist in this browser. See docs/mock.md.
+// What a visitor does is a mock for now, kept by their browser: logging in
+// is real (lib/session.svelte.ts), but zipp has no favorites, ratings or
+// recipes of visitors yet. Favorites, ratings and the planner are cookies,
+// so the server renders them; the recipes a visitor writes are in
+// localStorage (too big for cookies) and only exist in this browser. See
+// docs/mock.md.
 
 import { getContext, setContext } from 'svelte';
 import type { Cookies } from 'crelte/cookies';
-
-export type User = { name: string; email: string; bio: string };
 
 export type Ingredient = { amount: number | null; unit: string; name: string };
 
@@ -36,7 +36,6 @@ const KEY_RECIPES = 'chochbuech-recipes';
 const KEY_DELETED = 'chochbuech-deleted';
 
 export class Mock {
-	user: User | null = $state(null);
 	favorites: string[] = $state([]);
 	ratings: Record<string, number> = $state({});
 	// the weekly planner: {monday: recipeId, …}
@@ -50,24 +49,9 @@ export class Mock {
 
 	constructor(cookies: Cookies) {
 		this.cookies = cookies;
-		this.user = parse(cookies.get('chochbuech-user'), null);
 		this.favorites = parse(cookies.get('chochbuech-favorites'), []);
 		this.ratings = parse(cookies.get('chochbuech-ratings'), {});
 		this.planner = parse(cookies.get('chochbuech-planner'), {});
-	}
-
-	signIn(user: User) {
-		this.user = user;
-		this.save('chochbuech-user', user);
-	}
-
-	updateUser(user: User) {
-		this.signIn(user);
-	}
-
-	signOut() {
-		this.user = null;
-		this.cookies.remove('chochbuech-user');
 	}
 
 	isFavorite(id: string): boolean {

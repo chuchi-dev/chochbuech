@@ -28,11 +28,13 @@
 		validate,
 	} from '@/components/editor/form';
 	import { getMock } from '@/lib/mock.svelte';
+	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
 	/** @import { Form, Errors } from '@/components/editor/form' */
 
 	const mock = getMock();
+	const session = getSession();
 	const toasts = getToasts();
 	const router = getRouter();
 	const route = getRoute();
@@ -137,7 +139,7 @@
 	<title>{title} | Chuchi Recipes</title>
 </svelte:head>
 
-{#if !mock.user}
+{#if !session.user}
 	<div class="note narrow">
 		<h1 class="h1">{title}</h1>
 		<p class="lead">Sign in to write your own recipes.</p>

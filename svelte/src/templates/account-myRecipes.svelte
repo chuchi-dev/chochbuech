@@ -1,11 +1,7 @@
 <script module>
-	import cookQuery from '@/queries/cookByName.graphql';
-	import recipesQuery from '@/queries/recipes.graphql';
-
 	/**
 	 * @typedef {{
 	 *   key: string,
-	 *   deleteId: string,
 	 *   title: string,
 	 *   posted: string,
 	 *   image: any,
@@ -13,28 +9,6 @@
 	 *   edit: string,
 	 * }} Row
 	 */
-
-	// the zipp recipes of the cook named like the (mock) user
-	/** @type {import('crelte').LoadData} */
-	export const loadData = async cr => {
-		let user = null;
-		try {
-			user = JSON.parse(cr.cookies.get('chochbuech-user') ?? 'null');
-		} catch {
-			// no user
-		}
-		if (!user?.name) return { recipes: [] };
-
-		const { cooks } = /** @type {any} */ (
-			await cr.query(cookQuery, { search: user.name })
-		);
-		const cook = cooks.find(
-			(/** @type {any} */ c) => c.title === user.name,
-		);
-		if (!cook) return { recipes: [] };
-
-		return cr.query(recipesQuery, { cook: cook.id, limit: 200, offset: 0 });
-	};
 </script>
 
 <script>
@@ -44,7 +18,7 @@
 	import { getMock } from '@/lib/mock.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
-	let { entry, recipes } = $props();
+	let { entry } = $props();
 
 	const mock = getMock();
 	const toasts = getToasts();
@@ -52,40 +26,19 @@
 	/** @type {string | null} */
 	let openKey = $state(null);
 
+	// the recipes written in this browser; the recipes of the user in zipp
+	// come with entry authors
 	/** @type {Row[]} */
-	let rows = $derived.by(() => {
-		const zippIds = new Set(recipes.map(r => r.id));
-		/** @param {any} l */
-		const localRow = (l, image = null, deleteId = l.id) => ({
+	let rows = $derived(
+		mock.recipes.map(l => ({
 			key: l.id,
-			deleteId,
 			title: l.title || 'Untitled',
 			posted: formatDate(l.postedAt),
-			image,
+			image: null,
 			view: `/my-recipes/${l.id}`,
 			edit: `/recipes/edit/${l.id}`,
-		});
-
-		const local = mock.recipes
-			.filter(l => !l.basedOn || !zippIds.has(l.basedOn))
-			.map(l => localRow(l));
-		const zipp = recipes
-			.filter(r => !mock.deleted.includes(r.id))
-			.map(r => {
-				const copy = mock.recipes.find(l => l.basedOn === r.id);
-				if (copy) return localRow(copy, r.image?.[0], r.id);
-				return {
-					key: r.id,
-					deleteId: r.id,
-					title: r.title,
-					posted: r.postDate,
-					image: r.image?.[0] ?? null,
-					view: r.url,
-					edit: `/recipes/edit/${r.id}`,
-				};
-			});
-		return [...local, ...zipp];
-	});
+		})),
+	);
 
 	/** `July 29th, 2024` like zipp's postDate @param {number} ms */
 	function formatDate(ms) {
@@ -106,7 +59,7 @@
 	/** @param {Row} row */
 	function remove(row) {
 		if (!confirm(`Delete “${row.title}”? This cannot be undone.`)) return;
-		mock.deleteRecipe(row.deleteId);
+		mock.deleteRecipe(row.key);
 		toasts.show('The recipe has been deleted successfully.');
 	}
 </script>

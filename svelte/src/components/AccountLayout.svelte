@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { getRoute, getRouter } from 'crelte';
-	import { getMock } from '@/lib/mock.svelte';
+	import { errorMessage, getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 	import { ACCOUNT_NAV } from '@/routes.js';
 	import Button from './Button.svelte';
@@ -24,7 +24,7 @@
 
 	const route = getRoute();
 	const router = getRouter();
-	const mock = getMock();
+	const session = getSession();
 	const toasts = getToasts();
 
 	let open = $state(false);
@@ -38,8 +38,13 @@
 		ACCOUNT_NAV.find(([href]) => href === path)?.[1] ?? title,
 	);
 
-	function logOut() {
-		mock.signOut();
+	async function logOut() {
+		try {
+			await session.logout();
+		} catch (e) {
+			toasts.error(errorMessage(e));
+			return;
+		}
 		toasts.show('You have been logged out.');
 		router.open('/');
 	}
@@ -49,7 +54,7 @@
 	<title>{title} | Chuchi Recipes</title>
 </svelte:head>
 
-{#if mock.user}
+{#if session.user}
 	<div class="nav-desktop">
 		<Pills
 			{items}
@@ -88,7 +93,7 @@
 
 	<div class="account">
 		<header>
-			<p class="user">{mock.user.name}</p>
+			<p class="user">{session.user.name || session.user.email}</p>
 			<h1 class="h1"><i>{title}</i></h1>
 			{#if intro}
 				<div class="intro">{@render intro()}</div>

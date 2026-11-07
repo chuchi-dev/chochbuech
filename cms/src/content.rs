@@ -1,7 +1,9 @@
 //! The content model of chochbuech.com: sites, sections, entry types and
 //! blocks.
 
-use zipp::{Column, Field, Format, LinkKind, Schema, Section, Transform};
+use zipp::{
+	Access, Column, Field, Format, LinkKind, Role, Schema, Section, Transform,
+};
 use zipp_seo::{Seo, SeoDefaults, seo_field};
 
 /// The units of an ingredient's amount, `piece` shows the number alone.
@@ -39,6 +41,13 @@ pub fn schema() -> Schema {
 		.nav("Settings", ["header", "footer", "seoSettings"])
 		.nav_icon("Content", "folder-open")
 		.nav_icon("Settings", "sliders-horizontal")
+		// the visitors with an account, they log in on the website only
+		// (no studio); writing their own recipes comes with entry authors
+		.role(
+			Role::new("member", "Member")
+				.section("recipes", Access::View)
+				.no_studio(),
+		)
 		.plugin(
 			Seo::new()
 				.entry_type(

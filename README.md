@@ -13,9 +13,25 @@ own creations. Live at [chochbuech.com](https://chochbuech.com).
   (Svelte 5, SSR) project that reads zipp over GraphQL.
 - `craft/.env`: crelte reads its settings from there (there is no Craft).
 
-What visitors do themselves (signing in, favorites, ratings, the weekly
-planner and writing recipes) is a mock in the browser for now, see
-[docs/mock.md](docs/mock.md): zipp only has the studio's users yet.
+Members log in on the website with their zipp account (role `member`,
+no studio); what they do there (favorites, ratings, the weekly planner and
+writing recipes) is a mock in the browser for now, see
+[docs/mock.md](docs/mock.md).
+
+### Logins
+
+The browser posts to `/auth/login`, `/auth/logout`, `/auth/reset`
+(mails a link to `/reset-password?token=…`) and `/auth/password` (sets the
+password of a reset or invite link) and reads `GET /auth/me`. These are
+routes of the crelte server (`svelte/src/authRoutes.js`): they only take
+JSON from the site's own origin, forward to the cms's `/site-auth/*` with
+the visitor's address in `X-Forwarded-For` and keep the session token in
+the httpOnly cookie `chochbuech-session`; the browser only gets the user.
+The server render reads the user with the cookie (`loadSession` in
+`svelte/src/lib/session.svelte.ts`). So the cms runs with
+`--trusted-proxy` (the crelte server's address, else all visitors share
+one limit of wrong passwords), `--site-url` (the links of the mails) and
+`--smtp-url` (without it there are no reset mails).
 
 ### Local development
 
@@ -24,6 +40,7 @@ cp craft/.env.example craft/.env
 cd cms && cargo run -- serve --dev --site-url en=http://localhost:8080 \
 	--public-url http://127.0.0.1:8090
 cargo run -- user you@example.com     # a studio login, asks for the password
+cargo run -- user lea@example.com --role member   # a website login
 cd svelte && npm install && npm run dev
 ```
 

@@ -1,33 +1,25 @@
 <script>
 	import { getRoute, getRouter } from 'crelte';
 	import Button from '@/components/Button.svelte';
-	import { getMock } from '@/lib/mock.svelte';
+	import { errorMessage, getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
-	// signing in and up, a mock: any email and password works and nothing
-	// leaves the browser. `?register` shows sign up, `?next=` goes there after.
+	// logging in with a zipp account; `?next=` goes there after. There is no
+	// sign up yet, we create the accounts.
 	let { entry } = $props();
 
 	const route = getRoute();
 	const router = getRouter();
-	const mock = getMock();
+	const session = getSession();
 	const toasts = getToasts();
 
-	let register = $derived($route.getSearchParam('register') !== null);
 	let next = $derived(safeNext($route.getSearchParam('next')));
-	let title = $derived(register ? 'Sign Up' : 'Sign In');
-	let switchUrl = $derived.by(() => {
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity -- a local temporary
-		const params = new URLSearchParams();
-		if (!register) params.set('register', '');
-		if (next) params.set('next', next);
-		const s = params.toString().replace('register=', 'register');
-		return '/sign-in' + (s ? '?' + s : '');
-	});
 
-	let name = $state('');
 	let email = $state('');
 	let password = $state('');
+	let busy = $state(false);
+	/** @type {string | null} */
+	let error = $state(null);
 
 	/** only paths of this site @param {string | null} p */
 	function safeNext(p) {
@@ -35,35 +27,44 @@
 	}
 
 	/** @param {SubmitEvent} e */
-	function submit(e) {
+	async function submit(e) {
 		e.preventDefault();
-		const user = {
-			name: register ? name.trim() : 'Sören Meier',
-			email: email.trim(),
-			bio: '',
-		};
-		mock.signIn(user);
-		toasts.show(`Welcome, ${user.name}!`);
-		router.open(next ?? '/account');
+		busy = true;
+		error = null;
+		try {
+			const user = await session.login(email.trim(), password);
+			toasts.show(user.name ? `Welcome, ${user.name}!` : 'Welcome!');
+			router.open(next ?? '/account');
+		} catch (e) {
+			// a wrong password, the wait after too many: zipp says it
+			error = errorMessage(e);
+			password = '';
+		} finally {
+			busy = false;
+		}
 	}
 
-	function logOut() {
-		mock.signOut();
-		toasts.show('You have been logged out.');
+	async function logOut() {
+		try {
+			await session.logout();
+			toasts.show('You have been logged out.');
+		} catch (e) {
+			toasts.error(errorMessage(e));
+		}
 	}
 </script>
 
 <svelte:head>
-	<title>{title} | Chuchi Recipes</title>
+	<title>{entry.title} | Chuchi Recipes</title>
 </svelte:head>
 
 <div class="sign-in">
-	<h1 class="h1"><i>{mock.user ? entry.title : title}</i></h1>
+	<h1 class="h1"><i>{entry.title}</i></h1>
 
-	{#if mock.user}
+	{#if session.user}
 		<p class="signed-in">
-			You are signed in as <strong>{mock.user.name}</strong>
-			({mock.user.email}).
+			You are signed in as <strong>{session.user.name}</strong>
+			({session.user.email}).
 		</p>
 		<div class="buttons">
 			<Button href="/account">My Recipes</Button>
@@ -71,17 +72,6 @@
 		</div>
 	{:else}
 		<form onsubmit={submit}>
-			{#if register}
-				<label>
-					<span>Name</span>
-					<input
-						type="text"
-						bind:value={name}
-						autocomplete="name"
-						required
-					/>
-				</label>
-			{/if}
 			<label>
 				<span>Email</span>
 				<input
@@ -96,28 +86,26 @@
 				<input
 					type="password"
 					bind:value={password}
-					autocomplete={register
-						? 'new-password'
-						: 'current-password'}
+					autocomplete="current-password"
 					required
 				/>
 			</label>
+			{#if error}
+				<p class="error" role="alert">{error}</p>
+			{/if}
 			<div class="submit">
-				<Button type="submit">{title}</Button>
+				<Button type="submit" disabled={busy}>Sign In</Button>
 			</div>
 		</form>
 
 		<p class="switch">
-			{#if register}
-				Already have an account? <a href={switchUrl}>Sign in</a>
-			{:else}
-				New here? <a href={switchUrl}>Create an account</a>
-			{/if}
+			<a href="/reset-password">Forgot your password?</a>
 		</p>
 
 		<p class="note small">
-			Accounts are a demo: any email and password works and nothing leaves
-			your browser.
+			Accounts are created by us for now, write us at
+			<a href="mailto:hello@chochbuech.com">hello@chochbuech.com</a>
+			.
 		</p>
 	{/if}
 </div>
@@ -178,6 +166,14 @@
 	.note {
 		margin-top: 1.5rem;
 		color: var(--accent-soft);
+
+		a {
+			@include underline;
+		}
+	}
+
+	.error {
+		color: var(--error);
 	}
 
 	.signed-in {
@@ -205,7 +201,8 @@
 	}
 
 	@include hover {
-		.switch a:hover {
+		.switch a:hover,
+		.note a:hover {
 			opacity: 0.6;
 		}
 	}

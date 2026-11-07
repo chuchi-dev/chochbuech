@@ -1,13 +1,13 @@
 <script>
 	import { getGlobal, getRoute, getSite, onRoute } from 'crelte';
-	import { getMock } from '@/lib/mock.svelte';
+	import { getSession } from '@/lib/session.svelte';
 	import Button from './Button.svelte';
 
 	const header = getGlobal('header');
 	const recipesPage = getGlobal('recipesPage');
 	const site = getSite();
 	const route = getRoute();
-	const mock = getMock();
+	const session = getSession();
 
 	let open = $state(false);
 
@@ -20,7 +20,7 @@
 	);
 	let active = $derived($route.getSearchParam('category'));
 	let submitUrl = $derived(
-		mock.user ? '/recipes/new' : '/sign-in?next=/recipes/new',
+		session.user ? '/recipes/new' : '/sign-in?next=/recipes/new',
 	);
 
 	onRoute(() => (open = false));
@@ -39,8 +39,8 @@
 
 	<nav class="side right" aria-label="Account">
 		<a href="{listUrl}#search">Search</a>
-		{#if mock.user}
-			<a href="/account">{mock.user.name}</a>
+		{#if session.user}
+			<a href="/account">{session.user.name || 'My Account'}</a>
 		{:else}
 			<a href="/sign-in">Sign In</a>
 		{/if}
@@ -69,9 +69,9 @@
 			<a href="{listUrl}#search">Search</a>
 		</div>
 		<div class="buttons">
-			{#if mock.user}
+			{#if session.user}
 				<Button href="/account" look="secondary">
-					{mock.user.name}
+					{session.user.name || 'My Account'}
 				</Button>
 			{:else}
 				<Button href="/sign-in" look="secondary">Sign in</Button>

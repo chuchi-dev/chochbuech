@@ -1,6 +1,8 @@
 //! The content model through the queries of the website.
 
 use serde_json::{Value, json};
+use zipp::axum::body::{Body, to_bytes};
+use zipp::axum::http::{Request, header};
 use zipp::entries::api::CreateReq;
 use zipp::testing::{Client, TestServer, input};
 
@@ -186,4 +188,43 @@ async fn a_recipe_page_has_its_chapters() {
 	let html = chapters[0]["steps"]["chunks"][0]["html"].as_str().unwrap();
 	assert_eq!(html, "<p>Tie the tournedos.</p><p>Peel the potatoes.</p>");
 	assert_eq!(chapters[1]["title"], "Arranging");
+}
+
+/// A POST of the website's frontend, its status and the json answer.
+async fn post(client: &Client, path: &str, body: Value) -> (u16, Value) {
+	let req = Request::post(path)
+		.header(header::CONTENT_TYPE, "application/json")
+		.body(Body::from(body.to_string()))
+		.unwrap();
+	let resp = client.send(req).await;
+	let status = resp.status().as_u16();
+	let body = to_bytes(resp.into_body(), usize::MAX).await.unwrap();
+	(status, serde_json::from_slice(&body).unwrap_or_default())
+}
+
+#[tokio::test]
+async fn a_member_logs_in_on_the_website_but_not_in_the_studio() {
+	let ts = TestServer::new(schema());
+	// member0@test.ch with the password `password`
+	ts.user(Some("member"));
+	let login = json!({ "email": "member0@test.ch", "password": "password" });
+
+	let wrong = json!({ "email": "member0@test.ch", "password": "nope" });
+	let (status, _) = post(&ts.visitor(None), "/site-auth/login", wrong).await;
+	assert_eq!(status, 401);
+
+	let (status, auth) =
+		post(&ts.visitor(None), "/site-auth/login", login.clone()).await;
+	assert_eq!(status, 200, "{auth}");
+	assert_eq!(auth["user"]["role"], "member");
+	let token = auth["session"]["token"].as_str().unwrap();
+	let me = ts.visitor(Some(token)).get("/site-auth/me").await;
+	assert_eq!(me.status().as_u16(), 200);
+
+	// the studio refuses the password and the site's token
+	let (status, err) = post(&ts.anonymous(), "/api/auth/login", login).await;
+	assert_ne!(status, 200);
+	assert!(err.to_string().contains("website"), "{err}");
+	let session = ts.with_token(token).get("/api/auth/session").await;
+	assert_ne!(session.status().as_u16(), 200);
 }

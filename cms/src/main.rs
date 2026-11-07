@@ -1,7 +1,7 @@
 //! The cms of chochbuech.com: its content model. The website is the crelte
-//! project in `../svelte`. What visitors do themselves (signing in,
-//! favorites, ratings, writing recipes) is mocked in the frontend for now,
-//! zipp only has the studio's users.
+//! project in `../svelte`. Members log in there (role `member`, no
+//! studio); what they do (favorites, ratings, writing recipes) is mocked in
+//! the frontend for now.
 
 mod content;
 #[cfg(test)]

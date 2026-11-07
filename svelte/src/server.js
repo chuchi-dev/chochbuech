@@ -2,6 +2,7 @@ import * as app from './App.svelte';
 import * as errorPage from './Error.svelte';
 import { main, mainError } from 'crelte/server';
 import { seoRoutes } from 'meierlabs-seo/server';
+import { authRoutes } from './authRoutes.js';
 
 export const queries = import.meta.glob('@/queries/*', { eager: true });
 
@@ -17,4 +18,6 @@ export async function renderError(error, serverData) {
 export async function routes(router) {
 	// sitemaps and robots.txt from zipp
 	seoRoutes(router);
+	// the logins of the website, forwarded to the cms
+	authRoutes(router);
 }

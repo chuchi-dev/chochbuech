@@ -2,87 +2,57 @@
 	import { getRouter } from 'crelte';
 	import AccountLayout from '@/components/AccountLayout.svelte';
 	import Button from '@/components/Button.svelte';
-	import { getMock } from '@/lib/mock.svelte';
+	import { errorMessage, getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
-	// name, email and bio of the (mock) user, and deleting the account
+	// the account of the user: zipp has no routes to change it from the
+	// website yet, so it is only shown; a new password comes by mail
 	let { entry } = $props();
 
-	const mock = getMock();
+	const session = getSession();
 	const toasts = getToasts();
 	const router = getRouter();
 
-	let name = $state(mock.user?.name ?? '');
-	let email = $state(mock.user?.email ?? '');
-	let bio = $state(mock.user?.bio ?? '');
-
-	/** @param {SubmitEvent} e */
-	function save(e) {
-		e.preventDefault();
-		mock.updateUser({
-			name: name.trim(),
-			email: email.trim(),
-			bio: bio.trim(),
-		});
-		toasts.show('Your account has been saved.');
+	async function newPassword() {
+		if (!session.user) return;
+		try {
+			await session.requestReset(session.user.email);
+			toasts.show('We sent you a link to choose a new password.');
+		} catch (e) {
+			toasts.error(errorMessage(e));
+		}
 	}
 
-	function deleteAccount() {
-		const ok = confirm(
-			'Delete your account? This signs you out and deletes the recipes you wrote in this browser.',
-		);
-		if (!ok) return;
-		for (const r of [...mock.recipes]) mock.deleteRecipe(r.id);
-		mock.signOut();
-		toasts.show(
-			'Your account has been deleted (a demo: it only lived in this browser).',
-		);
+	async function logOut() {
+		try {
+			await session.logout();
+		} catch (e) {
+			toasts.error(errorMessage(e));
+			return;
+		}
+		toasts.show('You have been logged out.');
 		router.open('/');
 	}
 </script>
 
 <AccountLayout title={entry.title}>
 	<div class="settings">
-		<form onsubmit={save}>
-			<label>
-				<span>Name</span>
-				<input
-					type="text"
-					bind:value={name}
-					autocomplete="name"
-					required
-				/>
-			</label>
-			<label>
-				<span>Email</span>
-				<input
-					type="email"
-					bind:value={email}
-					autocomplete="email"
-					required
-				/>
-			</label>
-			<label>
-				<span>Bio</span>
-				<textarea
-					bind:value={bio}
-					rows="5"
-					placeholder="A few words about you and your cooking"
-				></textarea>
-			</label>
-			<div class="submit">
-				<Button type="submit">Save</Button>
-			</div>
-		</form>
+		<dl>
+			<dt>Name</dt>
+			<dd>{session.user?.name || '–'}</dd>
+			<dt>Email</dt>
+			<dd>{session.user?.email}</dd>
+		</dl>
 
-		<div class="danger">
-			<p class="small">
-				Accounts are a demo: they only live in this browser. Deleting
-				signs you out and removes the recipes you wrote here.
-			</p>
-			<button type="button" class="delete" onclick={deleteAccount}>
-				Delete account
-			</button>
+		<p class="note small">
+			Changing your name or email isn't possible here yet: write us at
+			<a href="mailto:hello@chochbuech.com">hello@chochbuech.com</a>
+			.
+		</p>
+
+		<div class="buttons">
+			<Button look="secondary" onclick={newPassword}>New Password</Button>
+			<Button onclick={logOut}>Log out</Button>
 		</div>
 	</div>
 </AccountLayout>
@@ -94,67 +64,41 @@
 		padding-inline: var(--sx-body);
 	}
 
-	form {
-		display: flex;
-		flex-direction: column;
-		gap: 1.5rem;
+	dl {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 1rem 2rem;
+		padding-block: 1.5rem;
+		border-block: 1px solid var(--line);
 	}
 
-	label {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-	}
-
-	input,
-	textarea {
-		width: 100%;
-		padding: 0.75rem 1rem;
-		border: 1px solid var(--line);
-		background: var(--bg-card);
-		color: var(--accent);
-		font: inherit;
-		transition: border-color 0.3s ease;
-
-		&:focus {
-			border-color: var(--accent);
-		}
-	}
-
-	textarea {
-		resize: vertical;
-	}
-
-	::placeholder {
+	dt {
 		color: var(--accent-soft);
 	}
 
-	.submit {
-		display: flex;
-		justify-content: center;
-		margin-top: 1rem;
+	dd {
+		overflow-wrap: anywhere;
 	}
 
-	.danger {
-		margin-top: 5rem;
-		padding-top: 2rem;
-		border-top: 1px solid var(--line);
-		text-align: center;
+	.note {
+		margin-top: 1.5rem;
+		color: var(--accent-soft);
 
-		p {
-			color: var(--accent-soft);
+		a {
+			@include underline;
 		}
 	}
 
-	.delete {
-		@include underline;
-		margin-top: 1rem;
-		color: var(--error);
-		cursor: pointer;
+	.buttons {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 3rem;
 	}
 
 	@include hover {
-		.delete:hover {
+		.note a:hover {
 			opacity: 0.6;
 		}
 	}

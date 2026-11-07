@@ -1,6 +1,7 @@
 <script>
 	import { getRoute, getRouter } from 'crelte';
 	import { getMock } from '@/lib/mock.svelte';
+	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 	import RoundButton from '../RoundButton.svelte';
 
@@ -9,6 +10,7 @@
 	let { id, editUrl } = $props();
 
 	const mock = getMock();
+	const session = getSession();
 	const toasts = getToasts();
 	const router = getRouter();
 	const route = getRoute();
@@ -19,7 +21,7 @@
 	let rated = $derived(id ? (mock.ratings[id] ?? 0) : 0);
 
 	function signInFirst() {
-		if (mock.user) return false;
+		if (session.user) return false;
 		toasts.show('Sign in to keep your favorites and ratings.');
 		router.open(`/sign-in?next=${encodeURIComponent($route.url.pathname)}`);
 		return true;
@@ -70,7 +72,7 @@
 		<RoundButton
 			icon="sliders"
 			label="Make it your own"
-			href={mock.user
+			href={session.user
 				? editUrl
 				: `/sign-in?next=${encodeURIComponent(editUrl)}`}
 		/>

@@ -3,17 +3,21 @@
 	import Button from '@/components/Button.svelte';
 	import RecipeView from '@/components/recipe/RecipeView.svelte';
 	import { getMock } from '@/lib/mock.svelte';
+	import { getSession } from '@/lib/session.svelte';
 	import { fromLocal } from '@/lib/recipe';
 
 	// a recipe of the editor: it only exists in this browser
 	const mock = getMock();
+	const session = getSession();
 	const categories = getGlobal('categories');
 
 	let { entry } = $props();
 
 	let local = $derived(mock.localRecipe(entry.recipeId));
 	let recipe = $derived(
-		local ? fromLocal(local, mock.user?.name ?? null, $categories) : null,
+		local
+			? fromLocal(local, session.user?.name ?? null, $categories)
+			: null,
 	);
 </script>
 

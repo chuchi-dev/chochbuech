@@ -1,6 +1,6 @@
 // The pages of the frontend that are no entries of zipp: signing in, the
-// account and the editor. They are mocks for now (see lib/mock.svelte.ts),
-// their template is `account-<type>.svelte`.
+// account and the editor. Logging in is zipp's, the rest mocks for now (see
+// lib/mock.svelte.ts); their template is `account-<type>.svelte`.
 
 /** @param {string} typeHandle @param {string} title */
 const page = (typeHandle, title) => () => ({
@@ -13,6 +13,8 @@ const page = (typeHandle, title) => () => ({
 export function staticRoutes(router) {
 	router
 		.add('/sign-in', page('signIn', 'Sign In'))
+		// the links of reset and invite mails: ?token=
+		.add('/reset-password', page('resetPassword', 'Your Password'))
 		.add('/account', page('myRecipes', 'My Recipes'))
 		.add('/account/favorites', page('favorites', 'Favorites'))
 		.add('/account/planner', page('planner', 'Weekly Planner'))
