@@ -3652,7 +3652,7 @@ dependencies = [
 [[package]]
 name = "zipp-cms"
 version = "0.1.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#85cedebd686208550bedfb5d4ad8507f87defe0a"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b8f4f5dade7af0552a4fb193518dc36583bed478"
 dependencies = [
  "async-graphql",
  "async-graphql-axum",
@@ -3664,6 +3664,7 @@ dependencies = [
  "lettre",
  "pulldown-cmark",
  "rand 0.9.5",
+ "reqwest",
  "rusqlite",
  "rust-embed",
  "serde",
@@ -3687,7 +3688,7 @@ dependencies = [
 [[package]]
 name = "zipp-members"
 version = "0.1.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#85cedebd686208550bedfb5d4ad8507f87defe0a"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b8f4f5dade7af0552a4fb193518dc36583bed478"
 dependencies = [
  "serde",
  "serde_json",
@@ -3697,7 +3698,7 @@ dependencies = [
 [[package]]
 name = "zipp-seo"
 version = "0.1.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#85cedebd686208550bedfb5d4ad8507f87defe0a"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b8f4f5dade7af0552a4fb193518dc36583bed478"
 dependencies = [
  "serde",
  "serde_json",

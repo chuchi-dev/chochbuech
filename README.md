@@ -69,7 +69,8 @@ a user without a page. Members change their name, bio and photo on the
 account page; the slug and `memberSince` are an admin's, in the studio's
 user page. A recipe gets another author in the studio (admins). The
 users are only in GraphQL for `serve`'s token (`ZIPP_GRAPHQL_TOKEN`) or a
-token of the studio with users switched on.
+token of the studio whose GraphQL schema has `.users()` (the schema
+`website` in `cms/src/content.rs`).
 
 ### Local development
 

@@ -2,8 +2,8 @@
 //! blocks.
 
 use zipp::{
-	Access, Column, Field, Format, LinkKind, Role, Schema, Section, Transform,
-	UserPages,
+	Access, Column, Field, Format, GraphqlSchema, LinkKind, Role, Schema,
+	Section, Transform, UserPages,
 };
 use zipp_members::Members;
 use zipp_seo::{Seo, SeoDefaults, seo_field};
@@ -36,6 +36,22 @@ pub fn schema() -> Schema {
 		.section(Section::structure("categories", ["category"]).max_level(1))
 		.section(Section::single("header", "header"))
 		.section(Section::single("footer", "footer"))
+		// what the website's token reads in GraphQL, admins make it in the
+		// studio; the token of `serve` (ZIPP_GRAPHQL_TOKEN) reads everything
+		.graphql_schema(
+			GraphqlSchema::new("website", "Website")
+				.sections([
+					"pages",
+					"recipes",
+					"categories",
+					"header",
+					"footer",
+					"seoSettings",
+				])
+				.assets()
+				.users()
+				.previews(),
+		)
 		.nav("Content", ["pages", "recipes", "categories"])
 		.nav("Settings", ["header", "footer", "seoSettings"])
 		.nav_icon("Content", "folder-open")
