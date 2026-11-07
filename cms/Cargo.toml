@@ -1,0 +1,15 @@
+[package]
+name = "chochbuech-cms"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# zipp from main until 0.1.1 is out, like valgistesshots
+[dependencies]
+zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
+zipp-seo = { git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
+
+[dev-dependencies]
+serde_json = "1.0"
+tokio = { version = "1.45", features = ["rt-multi-thread", "macros"] }
+zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main", features = ["testing"] }

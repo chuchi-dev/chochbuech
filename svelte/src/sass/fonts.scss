@@ -1,0 +1,48 @@
+@font-face {
+	font-family: 'Bagoss';
+	src: url('/fonts/BagossStandard-Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Bagoss';
+	src: url('/fonts/BagossStandard-RegularItalic.woff2') format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PP Editorial Old';
+	src: url('/fonts/PPEditorialOld-Italic.woff2') format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PP Editorial Old';
+	src: url('/fonts/PPEditorialOld-Ultralight.woff2') format('woff2');
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'PP Editorial Old';
+	src: url('/fonts/PPEditorialOld-UltralightItalic.woff2') format('woff2');
+	font-weight: 200;
+	font-style: italic;
+	font-display: swap;
+}
+
+// the design's hand writing is Smoothy, Caveat (OFL) stands in for it
+@font-face {
+	font-family: 'Caveat';
+	src: url('/fonts/Caveat-Medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}

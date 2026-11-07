@@ -1,0 +1,34 @@
+# a recipe of zipp to change in the editor
+query ($siteId: [QueryArgument], $id: [QueryArgument]) {
+  recipe: entry(section: "recipes", siteId: $siteId, id: $id) {
+    id
+    title
+    url
+    postDate @formatDateTime(format: "U")
+    ... on recipe_Entry {
+      serves
+      totalTime
+      activeTime
+      category {
+        slug
+      }
+      chapters {
+        ... on chapter_Block {
+          title
+          ingredients {
+            amount
+            unit
+            name
+          }
+          steps {
+            chunks {
+              ... on Html {
+                html
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

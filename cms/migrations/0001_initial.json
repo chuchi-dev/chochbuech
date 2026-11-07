@@ -1,0 +1,2944 @@
+{
+  "format": 1,
+  "ops": [
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "seoSettings",
+        "name": "SEO",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "siteName",
+            "label": "Site name, set it: else the name of the site (Deutsch)",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "titlePattern",
+            "label": "Title pattern, empty: {title} | {siteName}",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": 300,
+            "multiline": true
+          },
+          {
+            "handle": "image",
+            "label": "Image for sharing",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "robots",
+            "label": "Robots, empty: index, follow",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "index, follow",
+                "label": "Index, follow links"
+              },
+              {
+                "value": "noindex, follow",
+                "label": "No index, follow links"
+              },
+              {
+                "value": "index, nofollow",
+                "label": "Index, don't follow links"
+              },
+              {
+                "value": "noindex, nofollow",
+                "label": "No index, don't follow links"
+              }
+            ]
+          },
+          {
+            "handle": "twitterHandle",
+            "label": "X handle",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "robotsTxt",
+            "label": "robots.txt, empty: allow everything",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "organization",
+            "label": "Structured data",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "group",
+            "component": "seoOrganization"
+          },
+          {
+            "handle": "overrides",
+            "label": "Per section and entry type",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "blocks",
+            "types": [
+              "seoOverride"
+            ],
+            "min": null,
+            "max": null
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "seoOrganization",
+        "name": "Organization",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "type",
+            "label": "Type",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Organization",
+                "label": "Organization"
+              },
+              {
+                "value": "Corporation",
+                "label": "Corporation"
+              },
+              {
+                "value": "LocalBusiness",
+                "label": "LocalBusiness"
+              },
+              {
+                "value": "ProfessionalService",
+                "label": "ProfessionalService"
+              },
+              {
+                "value": "MedicalBusiness",
+                "label": "MedicalBusiness"
+              },
+              {
+                "value": "MedicalClinic",
+                "label": "MedicalClinic"
+              },
+              {
+                "value": "Physician",
+                "label": "Physician"
+              },
+              {
+                "value": "Dentist",
+                "label": "Dentist"
+              },
+              {
+                "value": "LegalService",
+                "label": "LegalService"
+              },
+              {
+                "value": "FinancialService",
+                "label": "FinancialService"
+              },
+              {
+                "value": "RealEstateAgent",
+                "label": "RealEstateAgent"
+              },
+              {
+                "value": "Store",
+                "label": "Store"
+              },
+              {
+                "value": "Restaurant",
+                "label": "Restaurant"
+              },
+              {
+                "value": "LodgingBusiness",
+                "label": "LodgingBusiness"
+              },
+              {
+                "value": "EducationalOrganization",
+                "label": "EducationalOrganization"
+              },
+              {
+                "value": "NGO",
+                "label": "NGO"
+              },
+              {
+                "value": "GovernmentOrganization",
+                "label": "GovernmentOrganization"
+              },
+              {
+                "value": "Person",
+                "label": "Person"
+              }
+            ]
+          },
+          {
+            "handle": "name",
+            "label": "Name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "alternateName",
+            "label": "Alternate name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "legalName",
+            "label": "Legal name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "url",
+            "label": "URL, empty: the site",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "logo",
+            "label": "Logo",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "email",
+            "label": "Email",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "telephone",
+            "label": "Telephone",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "street",
+            "label": "Street",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "postalCode",
+            "label": "Postal code",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "locality",
+            "label": "Locality",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "region",
+            "label": "Region",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "country",
+            "label": "Country",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "latitude",
+            "label": "Latitude",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "number",
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "longitude",
+            "label": "Longitude",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "number",
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "priceRange",
+            "label": "Price range",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "openingHours",
+            "label": "Opening hours",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "blocks",
+            "types": [
+              "seoOpeningHours"
+            ],
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "sameAs",
+            "label": "Profiles, one url per line",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "creatorName",
+            "label": "Made by",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "creatorType",
+            "label": "Creator type",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Organization",
+                "label": "Organization"
+              },
+              {
+                "value": "Person",
+                "label": "Person"
+              }
+            ]
+          },
+          {
+            "handle": "creatorUrl",
+            "label": "Creator url",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "seoOverride",
+        "name": "Section or entry type",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "appliesTo",
+            "label": "For",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "section:pages",
+                "label": "Section Pages"
+              },
+              {
+                "value": "section:recipes",
+                "label": "Section Recipes"
+              },
+              {
+                "value": "section:cooks",
+                "label": "Section Cooks"
+              },
+              {
+                "value": "type:home",
+                "label": "Entry type Home"
+              },
+              {
+                "value": "type:page",
+                "label": "Entry type Page"
+              },
+              {
+                "value": "type:recipes",
+                "label": "Entry type Recipes"
+              },
+              {
+                "value": "type:recipe",
+                "label": "Entry type Recipe"
+              },
+              {
+                "value": "type:cook",
+                "label": "Entry type Cook"
+              }
+            ]
+          },
+          {
+            "handle": "titlePattern",
+            "label": "Title pattern, like {title} – Events | {siteName}",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": 300,
+            "multiline": true
+          },
+          {
+            "handle": "image",
+            "label": "Image for sharing",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "robots",
+            "label": "Robots",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "index, follow",
+                "label": "Index, follow links"
+              },
+              {
+                "value": "noindex, follow",
+                "label": "No index, follow links"
+              },
+              {
+                "value": "index, nofollow",
+                "label": "Index, don't follow links"
+              },
+              {
+                "value": "noindex, nofollow",
+                "label": "No index, don't follow links"
+              }
+            ]
+          },
+          {
+            "handle": "sitemap",
+            "label": "Sitemap",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "yes",
+                "label": "In the sitemap"
+              },
+              {
+                "value": "no",
+                "label": "Not in the sitemap"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "seoOpeningHours",
+        "name": "Opening hours",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "day",
+            "label": "Day",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Monday",
+                "label": "Monday"
+              },
+              {
+                "value": "Tuesday",
+                "label": "Tuesday"
+              },
+              {
+                "value": "Wednesday",
+                "label": "Wednesday"
+              },
+              {
+                "value": "Thursday",
+                "label": "Thursday"
+              },
+              {
+                "value": "Friday",
+                "label": "Friday"
+              },
+              {
+                "value": "Saturday",
+                "label": "Saturday"
+              },
+              {
+                "value": "Sunday",
+                "label": "Sunday"
+              }
+            ]
+          },
+          {
+            "handle": "opens",
+            "label": "Opens (09:00)",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "closes",
+            "label": "Closes (18:00)",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "home",
+        "name": "Home",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "heroTitle",
+            "label": "Title",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "*Italic* words are set in italics.",
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": false,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "heroImages",
+            "label": "Images",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Up to three, placed around the title: top left, bottom left, right.",
+            "kind": "assets",
+            "images": true,
+            "max": 3
+          },
+          {
+            "handle": "content",
+            "label": "Content",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "blocks",
+            "types": [
+              "recipeRow",
+              "feature",
+              "columns"
+            ],
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Hero",
+            "fields": [
+              "heroTitle",
+              "heroImages"
+            ]
+          },
+          {
+            "name": "Content",
+            "fields": [
+              "content"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "house"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "page",
+        "name": "Page",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "text",
+            "label": "Text",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [
+              2,
+              3
+            ],
+            "lists": true,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Content",
+            "fields": [
+              "text"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "file-text"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "recipes",
+        "name": "Recipes",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Content",
+            "fields": [
+              "listNote"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "list"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "recipe",
+        "name": "Recipe",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "category",
+            "label": "Category",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "width": 50,
+            "kind": "relation",
+            "types": [
+              "category"
+            ],
+            "max": 1
+          },
+          {
+            "handle": "cook",
+            "label": "By",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Empty: Anonymous.",
+            "width": 50,
+            "kind": "relation",
+            "types": [
+              "cook"
+            ],
+            "max": 1
+          },
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1,
+            "folder": "Recipes/{slug}"
+          },
+          {
+            "handle": "serves",
+            "label": "Serves",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "default": 4,
+            "width": 25,
+            "kind": "number",
+            "min": 1.0,
+            "max": 100.0,
+            "decimals": 0,
+            "unit": "people"
+          },
+          {
+            "handle": "totalTime",
+            "label": "Time in total",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 10000.0,
+            "decimals": 0,
+            "unit": "min"
+          },
+          {
+            "handle": "activeTime",
+            "label": "Time actively",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 10000.0,
+            "decimals": 0,
+            "unit": "min"
+          },
+          {
+            "handle": "rating",
+            "label": "Rating",
+            "required": false,
+            "indexed": true,
+            "translatable": false,
+            "instructions": "The average of the visitors' ratings; set by hand until they can rate.",
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 5.0,
+            "decimals": 1
+          },
+          {
+            "handle": "chapters",
+            "label": "Chapters",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "A chapter has its ingredients and its steps: every paragraph is a step, an image belongs to the step above it.",
+            "kind": "blocks",
+            "types": [
+              "chapter"
+            ],
+            "min": null,
+            "max": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Recipe",
+            "fields": [
+              "category",
+              "cook",
+              "image",
+              "serves",
+              "totalTime",
+              "activeTime",
+              "rating"
+            ]
+          },
+          {
+            "name": "Instructions",
+            "fields": [
+              "chapters"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "chef-hat"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "category",
+        "name": "Category",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "singular",
+            "label": "Singular",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "One of them: *Main Course by …* on the cards.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ],
+        "icon": {
+          "lucide": "tag"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "cook",
+        "name": "Cook",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "memberSince",
+            "label": "Member since",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 2000.0,
+            "max": 2100.0,
+            "decimals": 0
+          },
+          {
+            "handle": "bio",
+            "label": "Bio",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          }
+        ],
+        "card": true,
+        "icon": {
+          "lucide": "user-round"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "header",
+        "name": "Header",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "categories",
+            "label": "Categories in the menu",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "relation",
+            "types": [
+              "category"
+            ],
+            "max": null
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "footer",
+        "name": "Footer",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "copyright",
+            "label": "Copyright",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "After the ©, e.g. Chuchi Recipes, 2024.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "links",
+            "label": "Links",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "navigation",
+            "to": [
+              "entry",
+              "url"
+            ],
+            "depth": 2,
+            "sections": [
+              "pages"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "chapter",
+        "name": "Chapter",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "title",
+            "label": "Title",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Empty in the first chapter: Ingredients and Instructions.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "ingredients",
+            "label": "Ingredients",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "table",
+            "columns": [
+              {
+                "handle": "amount",
+                "label": "Amount",
+                "kind": "number",
+                "decimals": 2
+              },
+              {
+                "handle": "unit",
+                "label": "Unit",
+                "kind": "dropdown",
+                "options": [
+                  {
+                    "value": "piece",
+                    "label": "Pieces"
+                  },
+                  {
+                    "value": "g",
+                    "label": "Grams"
+                  },
+                  {
+                    "value": "kg",
+                    "label": "Kilograms"
+                  },
+                  {
+                    "value": "ml",
+                    "label": "Milliliters"
+                  },
+                  {
+                    "value": "cl",
+                    "label": "Centiliters"
+                  },
+                  {
+                    "value": "dl",
+                    "label": "Deciliters"
+                  },
+                  {
+                    "value": "l",
+                    "label": "Liters"
+                  },
+                  {
+                    "value": "tsp",
+                    "label": "Teaspoons"
+                  },
+                  {
+                    "value": "tbsp",
+                    "label": "Tablespoons"
+                  },
+                  {
+                    "value": "pinch",
+                    "label": "Pinch"
+                  }
+                ]
+              },
+              {
+                "handle": "name",
+                "label": "Ingredient",
+                "kind": "text"
+              }
+            ]
+          },
+          {
+            "handle": "steps",
+            "label": "Steps",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": [
+              "stepImage"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "list-ordered"
+        },
+        "title_field": "title"
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "stepImage",
+        "name": "Image",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          }
+        ],
+        "icon": {
+          "lucide": "image"
+        }
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "recipeRow",
+        "name": "Recipes",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "marquee",
+            "label": "Marquee",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Runs through behind the recipes, e.g. *trending recipes*.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "recipes",
+            "label": "Recipes",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "relation",
+            "types": [
+              "recipe"
+            ],
+            "max": null
+          },
+          {
+            "handle": "slider",
+            "label": "Slider",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Scrolls sideways with arrows, else one row.",
+            "kind": "boolean"
+          }
+        ],
+        "icon": {
+          "lucide": "gallery-horizontal"
+        },
+        "title_field": "marquee"
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "feature",
+        "name": "Feature",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "title",
+            "label": "Title",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": false,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "text",
+            "label": "Text",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "link",
+            "label": "Button",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "link",
+            "to": [
+              "entry",
+              "url"
+            ],
+            "labels": true,
+            "newTab": true
+          },
+          {
+            "handle": "look",
+            "label": "Look",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "default": "plain",
+            "width": 50,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "plain",
+                "label": "Plain"
+              },
+              {
+                "value": "blue",
+                "label": "Blue"
+              }
+            ]
+          },
+          {
+            "handle": "doodles",
+            "label": "Doodles",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "The hand drawn corrections over the title (made for *There's too much sugar in this cake.*).",
+            "width": 50,
+            "kind": "boolean"
+          }
+        ],
+        "icon": {
+          "lucide": "megaphone"
+        },
+        "title_field": "title"
+      }
+    },
+    {
+      "op": "addComponent",
+      "component": {
+        "handle": "columns",
+        "name": "Text in two columns",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "left",
+            "label": "Left",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "right",
+            "label": "Right",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          }
+        ],
+        "icon": {
+          "lucide": "columns-2"
+        }
+      }
+    },
+    {
+      "op": "addSite",
+      "site": {
+        "handle": "en",
+        "name": "Chuchi Recipes",
+        "language": "en"
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "pages",
+        "name": "Pages",
+        "kind": "structure",
+        "types": [
+          "home",
+          "page",
+          "recipes"
+        ],
+        "uri": "{parent.uri}/{slug}",
+        "type_uris": {
+          "home": ""
+        }
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "recipes",
+        "name": "Recipes",
+        "kind": "channel",
+        "types": [
+          "recipe"
+        ],
+        "uri": "recipes/{slug}"
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "categories",
+        "name": "Categories",
+        "kind": "structure",
+        "types": [
+          "category"
+        ],
+        "uri": null,
+        "max_level": 1
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "cooks",
+        "name": "Cooks",
+        "kind": "channel",
+        "types": [
+          "cook"
+        ],
+        "uri": "cooks/{slug}"
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "header",
+        "name": "Header",
+        "kind": "single",
+        "types": [
+          "header"
+        ],
+        "uri": null
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "footer",
+        "name": "Footer",
+        "kind": "single",
+        "types": [
+          "footer"
+        ],
+        "uri": null
+      }
+    },
+    {
+      "op": "addSection",
+      "section": {
+        "handle": "seoSettings",
+        "name": "SEO",
+        "kind": "single",
+        "types": [
+          "seoSettings"
+        ],
+        "uri": null
+      }
+    }
+  ],
+  "schema": {
+    "sites": [
+      {
+        "handle": "en",
+        "name": "Chuchi Recipes",
+        "language": "en"
+      }
+    ],
+    "sections": [
+      {
+        "handle": "pages",
+        "name": "Pages",
+        "kind": "structure",
+        "types": [
+          "home",
+          "page",
+          "recipes"
+        ],
+        "uri": "{parent.uri}/{slug}",
+        "type_uris": {
+          "home": ""
+        }
+      },
+      {
+        "handle": "recipes",
+        "name": "Recipes",
+        "kind": "channel",
+        "types": [
+          "recipe"
+        ],
+        "uri": "recipes/{slug}"
+      },
+      {
+        "handle": "categories",
+        "name": "Categories",
+        "kind": "structure",
+        "types": [
+          "category"
+        ],
+        "uri": null,
+        "max_level": 1
+      },
+      {
+        "handle": "cooks",
+        "name": "Cooks",
+        "kind": "channel",
+        "types": [
+          "cook"
+        ],
+        "uri": "cooks/{slug}"
+      },
+      {
+        "handle": "header",
+        "name": "Header",
+        "kind": "single",
+        "types": [
+          "header"
+        ],
+        "uri": null
+      },
+      {
+        "handle": "footer",
+        "name": "Footer",
+        "kind": "single",
+        "types": [
+          "footer"
+        ],
+        "uri": null
+      },
+      {
+        "handle": "seoSettings",
+        "name": "SEO",
+        "kind": "single",
+        "types": [
+          "seoSettings"
+        ],
+        "uri": null
+      }
+    ],
+    "components": [
+      {
+        "handle": "seoSettings",
+        "name": "SEO",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "siteName",
+            "label": "Site name, set it: else the name of the site (Deutsch)",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "titlePattern",
+            "label": "Title pattern, empty: {title} | {siteName}",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": 300,
+            "multiline": true
+          },
+          {
+            "handle": "image",
+            "label": "Image for sharing",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "robots",
+            "label": "Robots, empty: index, follow",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "index, follow",
+                "label": "Index, follow links"
+              },
+              {
+                "value": "noindex, follow",
+                "label": "No index, follow links"
+              },
+              {
+                "value": "index, nofollow",
+                "label": "Index, don't follow links"
+              },
+              {
+                "value": "noindex, nofollow",
+                "label": "No index, don't follow links"
+              }
+            ]
+          },
+          {
+            "handle": "twitterHandle",
+            "label": "X handle",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "robotsTxt",
+            "label": "robots.txt, empty: allow everything",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "organization",
+            "label": "Structured data",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "group",
+            "component": "seoOrganization"
+          },
+          {
+            "handle": "overrides",
+            "label": "Per section and entry type",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "blocks",
+            "types": [
+              "seoOverride"
+            ],
+            "min": null,
+            "max": null
+          }
+        ]
+      },
+      {
+        "handle": "seoOrganization",
+        "name": "Organization",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "type",
+            "label": "Type",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Organization",
+                "label": "Organization"
+              },
+              {
+                "value": "Corporation",
+                "label": "Corporation"
+              },
+              {
+                "value": "LocalBusiness",
+                "label": "LocalBusiness"
+              },
+              {
+                "value": "ProfessionalService",
+                "label": "ProfessionalService"
+              },
+              {
+                "value": "MedicalBusiness",
+                "label": "MedicalBusiness"
+              },
+              {
+                "value": "MedicalClinic",
+                "label": "MedicalClinic"
+              },
+              {
+                "value": "Physician",
+                "label": "Physician"
+              },
+              {
+                "value": "Dentist",
+                "label": "Dentist"
+              },
+              {
+                "value": "LegalService",
+                "label": "LegalService"
+              },
+              {
+                "value": "FinancialService",
+                "label": "FinancialService"
+              },
+              {
+                "value": "RealEstateAgent",
+                "label": "RealEstateAgent"
+              },
+              {
+                "value": "Store",
+                "label": "Store"
+              },
+              {
+                "value": "Restaurant",
+                "label": "Restaurant"
+              },
+              {
+                "value": "LodgingBusiness",
+                "label": "LodgingBusiness"
+              },
+              {
+                "value": "EducationalOrganization",
+                "label": "EducationalOrganization"
+              },
+              {
+                "value": "NGO",
+                "label": "NGO"
+              },
+              {
+                "value": "GovernmentOrganization",
+                "label": "GovernmentOrganization"
+              },
+              {
+                "value": "Person",
+                "label": "Person"
+              }
+            ]
+          },
+          {
+            "handle": "name",
+            "label": "Name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "alternateName",
+            "label": "Alternate name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "legalName",
+            "label": "Legal name",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "url",
+            "label": "URL, empty: the site",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "logo",
+            "label": "Logo",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "email",
+            "label": "Email",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "telephone",
+            "label": "Telephone",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "street",
+            "label": "Street",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "postalCode",
+            "label": "Postal code",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "locality",
+            "label": "Locality",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "region",
+            "label": "Region",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "country",
+            "label": "Country",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "latitude",
+            "label": "Latitude",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "number",
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "longitude",
+            "label": "Longitude",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "number",
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "priceRange",
+            "label": "Price range",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "openingHours",
+            "label": "Opening hours",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "blocks",
+            "types": [
+              "seoOpeningHours"
+            ],
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "sameAs",
+            "label": "Profiles, one url per line",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          },
+          {
+            "handle": "creatorName",
+            "label": "Made by",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "creatorType",
+            "label": "Creator type",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Organization",
+                "label": "Organization"
+              },
+              {
+                "value": "Person",
+                "label": "Person"
+              }
+            ]
+          },
+          {
+            "handle": "creatorUrl",
+            "label": "Creator url",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ]
+      },
+      {
+        "handle": "seoOverride",
+        "name": "Section or entry type",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "appliesTo",
+            "label": "For",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "section:pages",
+                "label": "Section Pages"
+              },
+              {
+                "value": "section:recipes",
+                "label": "Section Recipes"
+              },
+              {
+                "value": "section:cooks",
+                "label": "Section Cooks"
+              },
+              {
+                "value": "type:home",
+                "label": "Entry type Home"
+              },
+              {
+                "value": "type:page",
+                "label": "Entry type Page"
+              },
+              {
+                "value": "type:recipes",
+                "label": "Entry type Recipes"
+              },
+              {
+                "value": "type:recipe",
+                "label": "Entry type Recipe"
+              },
+              {
+                "value": "type:cook",
+                "label": "Entry type Cook"
+              }
+            ]
+          },
+          {
+            "handle": "titlePattern",
+            "label": "Title pattern, like {title} – Events | {siteName}",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "description",
+            "label": "Description",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": 300,
+            "multiline": true
+          },
+          {
+            "handle": "image",
+            "label": "Image for sharing",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          },
+          {
+            "handle": "robots",
+            "label": "Robots",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "index, follow",
+                "label": "Index, follow links"
+              },
+              {
+                "value": "noindex, follow",
+                "label": "No index, follow links"
+              },
+              {
+                "value": "index, nofollow",
+                "label": "Index, don't follow links"
+              },
+              {
+                "value": "noindex, nofollow",
+                "label": "No index, don't follow links"
+              }
+            ]
+          },
+          {
+            "handle": "sitemap",
+            "label": "Sitemap",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "yes",
+                "label": "In the sitemap"
+              },
+              {
+                "value": "no",
+                "label": "Not in the sitemap"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "handle": "seoOpeningHours",
+        "name": "Opening hours",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "day",
+            "label": "Day",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "Monday",
+                "label": "Monday"
+              },
+              {
+                "value": "Tuesday",
+                "label": "Tuesday"
+              },
+              {
+                "value": "Wednesday",
+                "label": "Wednesday"
+              },
+              {
+                "value": "Thursday",
+                "label": "Thursday"
+              },
+              {
+                "value": "Friday",
+                "label": "Friday"
+              },
+              {
+                "value": "Saturday",
+                "label": "Saturday"
+              },
+              {
+                "value": "Sunday",
+                "label": "Sunday"
+              }
+            ]
+          },
+          {
+            "handle": "opens",
+            "label": "Opens (09:00)",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "closes",
+            "label": "Closes (18:00)",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ]
+      },
+      {
+        "handle": "home",
+        "name": "Home",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "heroTitle",
+            "label": "Title",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "*Italic* words are set in italics.",
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": false,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "heroImages",
+            "label": "Images",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Up to three, placed around the title: top left, bottom left, right.",
+            "kind": "assets",
+            "images": true,
+            "max": 3
+          },
+          {
+            "handle": "content",
+            "label": "Content",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "blocks",
+            "types": [
+              "recipeRow",
+              "feature",
+              "columns"
+            ],
+            "min": null,
+            "max": null
+          },
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Hero",
+            "fields": [
+              "heroTitle",
+              "heroImages"
+            ]
+          },
+          {
+            "name": "Content",
+            "fields": [
+              "content"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "house"
+        }
+      },
+      {
+        "handle": "page",
+        "name": "Page",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "text",
+            "label": "Text",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [
+              2,
+              3
+            ],
+            "lists": true,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Content",
+            "fields": [
+              "text"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "file-text"
+        }
+      },
+      {
+        "handle": "recipes",
+        "name": "Recipes",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "listNote",
+            "label": "List note",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "note",
+            "text": "Lists every recipe with a search and the categories as filters; the header's categories link here with `?category=<slug>`."
+          },
+          {
+            "handle": "seo",
+            "label": "SEO",
+            "required": false,
+            "indexed": false,
+            "translatable": true,
+            "kind": "custom",
+            "type": "seo",
+            "options": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Content",
+            "fields": [
+              "listNote"
+            ]
+          },
+          {
+            "name": "SEO",
+            "fields": [
+              "seo"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "list"
+        }
+      },
+      {
+        "handle": "recipe",
+        "name": "Recipe",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "category",
+            "label": "Category",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "width": 50,
+            "kind": "relation",
+            "types": [
+              "category"
+            ],
+            "max": 1
+          },
+          {
+            "handle": "cook",
+            "label": "By",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Empty: Anonymous.",
+            "width": 50,
+            "kind": "relation",
+            "types": [
+              "cook"
+            ],
+            "max": 1
+          },
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1,
+            "folder": "Recipes/{slug}"
+          },
+          {
+            "handle": "serves",
+            "label": "Serves",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "default": 4,
+            "width": 25,
+            "kind": "number",
+            "min": 1.0,
+            "max": 100.0,
+            "decimals": 0,
+            "unit": "people"
+          },
+          {
+            "handle": "totalTime",
+            "label": "Time in total",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 10000.0,
+            "decimals": 0,
+            "unit": "min"
+          },
+          {
+            "handle": "activeTime",
+            "label": "Time actively",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 10000.0,
+            "decimals": 0,
+            "unit": "min"
+          },
+          {
+            "handle": "rating",
+            "label": "Rating",
+            "required": false,
+            "indexed": true,
+            "translatable": false,
+            "instructions": "The average of the visitors' ratings; set by hand until they can rate.",
+            "width": 25,
+            "kind": "number",
+            "min": 0.0,
+            "max": 5.0,
+            "decimals": 1
+          },
+          {
+            "handle": "chapters",
+            "label": "Chapters",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "A chapter has its ingredients and its steps: every paragraph is a step, an image belongs to the step above it.",
+            "kind": "blocks",
+            "types": [
+              "chapter"
+            ],
+            "min": null,
+            "max": null
+          }
+        ],
+        "tabs": [
+          {
+            "name": "Recipe",
+            "fields": [
+              "category",
+              "cook",
+              "image",
+              "serves",
+              "totalTime",
+              "activeTime",
+              "rating"
+            ]
+          },
+          {
+            "name": "Instructions",
+            "fields": [
+              "chapters"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "chef-hat"
+        }
+      },
+      {
+        "handle": "category",
+        "name": "Category",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "singular",
+            "label": "Singular",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "One of them: *Main Course by …* on the cards.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          }
+        ],
+        "icon": {
+          "lucide": "tag"
+        }
+      },
+      {
+        "handle": "cook",
+        "name": "Cook",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "memberSince",
+            "label": "Member since",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "width": 25,
+            "kind": "number",
+            "min": 2000.0,
+            "max": 2100.0,
+            "decimals": 0
+          },
+          {
+            "handle": "bio",
+            "label": "Bio",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "text",
+            "max": null,
+            "multiline": true
+          }
+        ],
+        "card": true,
+        "icon": {
+          "lucide": "user-round"
+        }
+      },
+      {
+        "handle": "header",
+        "name": "Header",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "categories",
+            "label": "Categories in the menu",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "relation",
+            "types": [
+              "category"
+            ],
+            "max": null
+          }
+        ]
+      },
+      {
+        "handle": "footer",
+        "name": "Footer",
+        "entry": true,
+        "fields": [
+          {
+            "handle": "copyright",
+            "label": "Copyright",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "After the ©, e.g. Chuchi Recipes, 2024.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "links",
+            "label": "Links",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "navigation",
+            "to": [
+              "entry",
+              "url"
+            ],
+            "depth": 2,
+            "sections": [
+              "pages"
+            ]
+          }
+        ]
+      },
+      {
+        "handle": "chapter",
+        "name": "Chapter",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "title",
+            "label": "Title",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Empty in the first chapter: Ingredients and Instructions.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "ingredients",
+            "label": "Ingredients",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "table",
+            "columns": [
+              {
+                "handle": "amount",
+                "label": "Amount",
+                "kind": "number",
+                "decimals": 2
+              },
+              {
+                "handle": "unit",
+                "label": "Unit",
+                "kind": "dropdown",
+                "options": [
+                  {
+                    "value": "piece",
+                    "label": "Pieces"
+                  },
+                  {
+                    "value": "g",
+                    "label": "Grams"
+                  },
+                  {
+                    "value": "kg",
+                    "label": "Kilograms"
+                  },
+                  {
+                    "value": "ml",
+                    "label": "Milliliters"
+                  },
+                  {
+                    "value": "cl",
+                    "label": "Centiliters"
+                  },
+                  {
+                    "value": "dl",
+                    "label": "Deciliters"
+                  },
+                  {
+                    "value": "l",
+                    "label": "Liters"
+                  },
+                  {
+                    "value": "tsp",
+                    "label": "Teaspoons"
+                  },
+                  {
+                    "value": "tbsp",
+                    "label": "Tablespoons"
+                  },
+                  {
+                    "value": "pinch",
+                    "label": "Pinch"
+                  }
+                ]
+              },
+              {
+                "handle": "name",
+                "label": "Ingredient",
+                "kind": "text"
+              }
+            ]
+          },
+          {
+            "handle": "steps",
+            "label": "Steps",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": [
+              "stepImage"
+            ]
+          }
+        ],
+        "icon": {
+          "lucide": "list-ordered"
+        },
+        "title_field": "title"
+      },
+      {
+        "handle": "stepImage",
+        "name": "Image",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "image",
+            "label": "Image",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "assets",
+            "images": true,
+            "max": 1
+          }
+        ],
+        "icon": {
+          "lucide": "image"
+        }
+      },
+      {
+        "handle": "recipeRow",
+        "name": "Recipes",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "marquee",
+            "label": "Marquee",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Runs through behind the recipes, e.g. *trending recipes*.",
+            "kind": "text",
+            "max": null,
+            "multiline": false
+          },
+          {
+            "handle": "recipes",
+            "label": "Recipes",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "relation",
+            "types": [
+              "recipe"
+            ],
+            "max": null
+          },
+          {
+            "handle": "slider",
+            "label": "Slider",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "Scrolls sideways with arrows, else one row.",
+            "kind": "boolean"
+          }
+        ],
+        "icon": {
+          "lucide": "gallery-horizontal"
+        },
+        "title_field": "marquee"
+      },
+      {
+        "handle": "feature",
+        "name": "Feature",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "title",
+            "label": "Title",
+            "required": true,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": false,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "text",
+            "label": "Text",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "link",
+            "label": "Button",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "link",
+            "to": [
+              "entry",
+              "url"
+            ],
+            "labels": true,
+            "newTab": true
+          },
+          {
+            "handle": "look",
+            "label": "Look",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "default": "plain",
+            "width": 50,
+            "kind": "dropdown",
+            "options": [
+              {
+                "value": "plain",
+                "label": "Plain"
+              },
+              {
+                "value": "blue",
+                "label": "Blue"
+              }
+            ]
+          },
+          {
+            "handle": "doodles",
+            "label": "Doodles",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "instructions": "The hand drawn corrections over the title (made for *There's too much sugar in this cake.*).",
+            "width": 50,
+            "kind": "boolean"
+          }
+        ],
+        "icon": {
+          "lucide": "megaphone"
+        },
+        "title_field": "title"
+      },
+      {
+        "handle": "columns",
+        "name": "Text in two columns",
+        "entry": false,
+        "fields": [
+          {
+            "handle": "left",
+            "label": "Left",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          },
+          {
+            "handle": "right",
+            "label": "Right",
+            "required": false,
+            "indexed": false,
+            "translatable": false,
+            "kind": "richText",
+            "headings": [],
+            "lists": false,
+            "links": true,
+            "buttons": false,
+            "blocks": []
+          }
+        ],
+        "icon": {
+          "lucide": "columns-2"
+        }
+      }
+    ],
+    "transforms": [
+      {
+        "handle": "seoSocial",
+        "width": 1200,
+        "height": 630,
+        "crop": true,
+        "format": null
+      },
+      {
+        "handle": "card",
+        "width": 480,
+        "height": 640,
+        "crop": true,
+        "format": "webp"
+      },
+      {
+        "handle": "thumb",
+        "width": 200,
+        "height": 264,
+        "crop": true,
+        "format": "webp"
+      },
+      {
+        "handle": "hero",
+        "width": 2200,
+        "height": 1400,
+        "crop": true,
+        "format": "webp"
+      },
+      {
+        "handle": "wide",
+        "width": 1300,
+        "height": null,
+        "crop": false,
+        "format": "webp"
+      },
+      {
+        "handle": "collage",
+        "width": 720,
+        "height": 720,
+        "crop": true,
+        "format": "webp"
+      }
+    ],
+    "nav": [
+      {
+        "name": "Content",
+        "sections": [
+          "pages",
+          "recipes",
+          "categories",
+          "cooks"
+        ],
+        "icon": {
+          "lucide": "folder-open"
+        }
+      },
+      {
+        "name": "Settings",
+        "sections": [
+          "header",
+          "footer",
+          "seoSettings"
+        ],
+        "icon": {
+          "lucide": "sliders-horizontal"
+        }
+      }
+    ]
+  }
+}

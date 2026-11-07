@@ -1,0 +1,45 @@
+@use 'vars' as *;
+
+// rich text from zipp, rendered by components/Richtext.svelte
+.rt {
+	p + p,
+	ul + p,
+	ol + p,
+	p + ul,
+	p + ol {
+		margin-top: 1.5em;
+	}
+
+	h2,
+	h3 {
+		@include h2;
+		margin-bottom: 0.5em;
+	}
+
+	h3 {
+		font-size: calc(var(--h2) * 0.6);
+	}
+
+	* + h2,
+	* + h3 {
+		margin-top: 1em;
+	}
+
+	ul,
+	ol {
+		padding-left: 1.25em;
+	}
+
+	ul {
+		list-style: disc;
+	}
+
+	a {
+		@include underline;
+	}
+
+	i,
+	em {
+		font-style: italic;
+	}
+}

@@ -1,0 +1,36 @@
+# globals are singles in zipp, globalSet finds them like in Craft
+query ($siteId: [QueryArgument]) {
+  header: globalSet(handle: "header", siteId: $siteId) {
+    ... on header_Entry {
+      categories {
+        id
+        title
+        slug
+      }
+    }
+  }
+  footer: globalSet(handle: "footer", siteId: $siteId) {
+    ... on footer_Entry {
+      copyright
+      links {
+        url
+        label
+        defaultLabel
+        target
+      }
+    }
+  }
+  # the filters of the lists, in the order of the tree
+  categories: entries(section: "categories", siteId: $siteId) {
+    id
+    title
+    slug
+    ... on category_Entry {
+      singular
+    }
+  }
+  # where the header's links go
+  recipesPage: entry(section: "pages", type: "recipes", siteId: $siteId) {
+    url
+  }
+}

@@ -1,0 +1,145 @@
+query ($uri: [String], $siteId: [QueryArgument]) {
+  entry(uri: $uri, siteId: $siteId) {
+    id
+    seoJson
+    siteId
+    url
+    sectionHandle
+    typeHandle
+    title
+    ... on home_Entry {
+      heroTitle {
+        html
+      }
+      heroImages {
+        url(transform: "wide")
+        width(transform: "wide")
+        height(transform: "wide")
+        alt
+      }
+      content {
+        typeHandle
+        ... on recipeRow_Block {
+          marquee
+          slider
+          recipes {
+            id
+            title
+            url
+            slug
+            postDate @formatDateTime(format: "F jS, Y")
+            ... on recipe_Entry {
+              rating
+              category {
+                id
+                title
+                slug
+                ... on category_Entry {
+                  singular
+                }
+              }
+              cook {
+                title
+                url
+              }
+              image {
+                url(transform: "card")
+                srcset(transforms: ["thumb", "card"])
+                width(transform: "card")
+                height(transform: "card")
+                alt
+              }
+            }
+          }
+        }
+        ... on feature_Block {
+          title {
+            html
+          }
+          text {
+            html
+          }
+          link {
+            url
+            label
+            defaultLabel
+            target
+          }
+          look
+          doodles
+        }
+        ... on columns_Block {
+          left {
+            html
+          }
+          right {
+            html
+          }
+        }
+      }
+    }
+    ... on page_Entry {
+      text {
+        html
+      }
+    }
+    ... on recipe_Entry {
+      slug
+      postDate @formatDateTime(format: "F jS, Y")
+      rating
+      serves
+      totalTime
+      activeTime
+      category {
+        id
+        title
+        slug
+        ... on category_Entry {
+          singular
+        }
+      }
+      cook {
+        id
+        title
+        url
+      }
+      image {
+        url(transform: "hero")
+        srcset(transforms: ["wide", "hero"])
+        width(transform: "hero")
+        height(transform: "hero")
+        alt
+      }
+      chapters {
+        ... on chapter_Block {
+          title
+          ingredients {
+            amount
+            unit
+            name
+          }
+          steps {
+            chunks {
+              ... on Html {
+                html
+              }
+              ... on stepImage_Block {
+                image {
+                  url(transform: "wide")
+                  srcset(transforms: ["wide", "hero"])
+                  width(transform: "wide")
+                  height(transform: "wide")
+                  alt
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    ... on cook_Entry {
+      memberSince
+      bio
+    }
+  }
+}

@@ -1,0 +1,130 @@
+@use 'vars' as *;
+@use 'fonts';
+@use 'resets';
+@use 'rt';
+
+:root {
+	--accent: #3c67c0;
+	--accent-soft: rgba(60, 103, 192, 0.6);
+	--line: rgba(60, 103, 192, 0.25);
+	--bg: #f6f6f4;
+	--bg-card: #ffffff;
+	--text: var(--accent);
+	--text-invert: #f6f6f4;
+	--error: #ab4646;
+	--doodle: #444444;
+	--focus-color: var(--accent);
+
+	--font-sans: 'Bagoss', system-ui, sans-serif;
+	--font-serif: 'PP Editorial Old', Georgia, serif;
+	--font-hand: 'Caveat', cursive;
+
+	--display: 5rem;
+	--h1: 3rem;
+	--h2: 2.5rem;
+	--logo: 1.5rem;
+	--lead: 1rem;
+	--body: 1rem;
+	--small: 0.8125rem;
+
+	--sx-body: 1.25rem;
+	--sy-section: 6rem;
+	--topbar-height: 5rem;
+	--max-width: 100rem;
+	--narrow-width: 68rem;
+	--card-gap: 4rem;
+
+	@include tablet {
+		--sx-body: 2.5rem;
+		--display: 7rem;
+		--h1: 4rem;
+		--h2: 3rem;
+		--lead: 1.125rem;
+	}
+
+	@include desktop {
+		--sx-body: 4rem;
+		--sy-section: 10rem;
+		--display: 10rem;
+		--h1: 5rem;
+		--h2: 4rem;
+		--logo: 2rem;
+		--lead: 1.25rem;
+	}
+}
+
+html {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: 100%;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+body {
+	min-height: 100vh;
+	font-size: var(--body);
+}
+
+// the paper of the design: grey noise laid over everything
+body::after {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 200;
+	background: url('/noise.png');
+	opacity: 0.35;
+	mix-blend-mode: hard-light;
+	pointer-events: none;
+}
+
+.wrap {
+	@include wrap;
+}
+
+.narrow {
+	@include narrow;
+}
+
+.display {
+	@include display;
+}
+
+.h1 {
+	@include h1;
+}
+
+.h2 {
+	@include h2;
+}
+
+.lead {
+	@include lead;
+}
+
+.small {
+	@include small;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+:focus-visible {
+	outline: 2px solid var(--focus-color);
+	outline-offset: 2px;
+}
+
+::selection {
+	background: var(--accent);
+	color: var(--text-invert);
+}

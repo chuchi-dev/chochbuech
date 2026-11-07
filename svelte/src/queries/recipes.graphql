@@ -1,0 +1,54 @@
+# the list of recipes: search, category filter and pages for Load More
+query (
+  $siteId: [QueryArgument]
+  $search: String
+  $category: [QueryArgument]
+  $cook: [QueryArgument]
+  $limit: Int
+  $offset: Int
+) {
+  recipes: entries(
+    section: "recipes"
+    siteId: $siteId
+    search: $search
+    category: $category
+    cook: $cook
+    limit: $limit
+    offset: $offset
+  ) {
+    id
+    title
+    url
+    slug
+    postDate @formatDateTime(format: "F jS, Y")
+    ... on recipe_Entry {
+      rating
+      category {
+        id
+        title
+        slug
+        ... on category_Entry {
+          singular
+        }
+      }
+      cook {
+        title
+        url
+      }
+      image {
+        url(transform: "card")
+        srcset(transforms: ["thumb", "card"])
+        width(transform: "card")
+        height(transform: "card")
+        alt
+      }
+    }
+  }
+  total: entryCount(
+    section: "recipes"
+    siteId: $siteId
+    search: $search
+    category: $category
+    cook: $cook
+  )
+}

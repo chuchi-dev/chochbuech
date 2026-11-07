@@ -1,0 +1,25 @@
+# the weekly planner: all recipes to pick from with their ingredients
+query ($siteId: [QueryArgument]) {
+  recipes: entries(
+    section: "recipes"
+    siteId: $siteId
+    limit: 500
+    orderBy: "title"
+  ) {
+    id
+    title
+    url
+    ... on recipe_Entry {
+      serves
+      chapters {
+        ... on chapter_Block {
+          ingredients {
+            amount
+            unit
+            name
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# the favorites, the planner and my recipes: recipes by their ids
+query ($siteId: [QueryArgument], $ids: [QueryArgument]) {
+  recipes: entries(section: "recipes", siteId: $siteId, id: $ids, limit: 200) {
+    id
+    title
+    url
+    slug
+    postDate @formatDateTime(format: "F jS, Y")
+    ... on recipe_Entry {
+      rating
+      category {
+        id
+        title
+        slug
+        ... on category_Entry {
+          singular
+        }
+      }
+      cook {
+        title
+        url
+      }
+      image {
+        url(transform: "card")
+        srcset(transforms: ["thumb", "card"])
+        width(transform: "card")
+        height(transform: "card")
+        alt
+      }
+    }
+    ... on recipe_Entry {
+      serves
+      chapters {
+        ... on chapter_Block {
+          ingredients {
+            amount
+            unit
+            name
+          }
+        }
+      }
+    }
+  }
+}

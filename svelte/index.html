@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="<!--page-lang-->">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<!-- links to other sites never get the ?token= of a preview -->
+		<meta name="referrer" content="strict-origin-when-cross-origin" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="stylesheet" type="text/css" href="/src/sass/main.scss" />
+	</head>
+	<body class="<!--body-class-->">
+		<!--ssr-body-->
+		<script type="module" src="/src/client.js"></script>
+
+		<!-- 100% privacy-first analytics (strichli), only on chochbuech.com:
+		demos and development don't count -->
+		<script>
+			if (location.hostname === 'chochbuech.com') {
+				const s = document.createElement('script');
+				s.src = 'https://strichli.goodserver.ch/s.js';
+				s.async = true;
+				document.body.appendChild(s);
+			}
+		</script>
+	</body>
+</html>

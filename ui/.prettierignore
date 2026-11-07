@@ -1,5 +1,0 @@
-*.md
-*.json
-*.yaml
-/dist
-/node_modules
