@@ -5,20 +5,25 @@
 	import RoundButton from '../RoundButton.svelte';
 	import ChipSelect from './ChipSelect.svelte';
 	import MoveButton from './MoveButton.svelte';
+	import SortLine from './SortLine.svelte';
 	import { newIngredient, type FormChapter } from './form';
+	import { Sortable, moved } from './sortable.svelte';
 
-	// a chapter of the editor: open with its title, ingredients and steps,
-	// or collapsed to one line
+	// a chapter of the editor: its head with the handles, open with its
+	// title, ingredients and steps under it
 	let {
 		chapter = $bindable(),
 		index,
 		count,
+		sortable,
 		onmove,
 		onremove,
 	}: {
 		chapter: FormChapter;
 		index: number;
 		count: number;
+		/** the chapters' */
+		sortable: Sortable;
 		onmove: (dir: -1 | 1) => void;
 		onremove: () => void;
 	} = $props();
@@ -32,6 +37,11 @@
 			(chapter.title.trim() ? `: ${chapter.title}` : ''),
 	);
 	let list: HTMLElement | undefined = $state();
+	const sort = new Sortable(
+		() => list,
+		(from, to) =>
+			(chapter.ingredients = moved(chapter.ingredients, from, to)),
+	);
 
 	async function addIngredient() {
 		chapter.ingredients.push(newIngredient());
@@ -50,20 +60,37 @@
 	}
 </script>
 
-<section class="chapter" class:open={chapter.open} aria-label={name}>
-	{#snippet buttons()}
+<section
+	class="chapter"
+	class:open={chapter.open}
+	class:dragging={sortable.dragging === index}
+	aria-label={name}
+	data-sort
+>
+	<div class="head">
+		<MoveButton
+			label="Move {name}"
+			canUp={index > 0}
+			canDown={index < count - 1}
+			{sortable}
+			{index}
+			{onmove}
+		/>
+		<button
+			type="button"
+			class="name-button"
+			aria-expanded={chapter.open}
+			onclick={() => (chapter.open = !chapter.open)}
+		>
+			{name}
+		</button>
 		<div class="buttons">
-			<MoveButton
-				label="Move {name}"
-				canUp={index > 0}
-				canDown={index < count - 1}
-				{onmove}
-			/>
 			<RoundButton
 				icon="x"
 				label="Remove {name}"
 				filled={false}
 				size="sm"
+				ring={false}
 				onclick={onremove}
 			/>
 			<RoundButton
@@ -71,13 +98,14 @@
 				label={chapter.open ? `Collapse ${name}` : `Expand ${name}`}
 				filled={false}
 				size="sm"
+				ring={false}
 				onclick={() => (chapter.open = !chapter.open)}
 			/>
 		</div>
-	{/snippet}
+	</div>
 
 	{#if chapter.open}
-		<div class="head">
+		<div class="body">
 			<div class="title-field">
 				<label for="{id}-title">Chapter Title</label>
 				<input
@@ -88,92 +116,91 @@
 					bind:value={chapter.title}
 				/>
 			</div>
-			{@render buttons()}
-		</div>
 
-		<div class="ingredients">
-			<h3 id="{id}-ingredients">Ingredients</h3>
-			<ul aria-labelledby="{id}-ingredients" bind:this={list}>
-				{#each chapter.ingredients as ing, i (ing.key)}
-					<li class="row">
-						<span class="cell name">
-							<input
-								type="text"
-								placeholder="Ingredient"
-								aria-label="Ingredient {i + 1}"
-								bind:value={ing.name}
-							/>
-						</span>
-						<span class="cell amount">
-							<input
-								type="number"
-								inputmode="decimal"
-								step="any"
-								min="0"
-								placeholder="Amount"
-								aria-label="Amount of ingredient {i + 1}"
-								bind:value={ing.amount}
-							/>
-							<ChipSelect
-								bind:value={ing.unit}
-								options={UNIT_OPTIONS}
-								label="Unit of ingredient {i + 1}"
-							/>
-						</span>
-						<span class="cell icon">
-							<MoveButton
-								look="cell"
-								label="Move ingredient {i + 1}"
-								canUp={i > 0}
-								canDown={i < chapter.ingredients.length - 1}
-								onmove={dir => moveIngredient(i, dir)}
-							/>
-						</span>
-						<span class="cell icon">
-							<button
-								type="button"
-								class="remove"
-								aria-label="Remove ingredient {i + 1}"
-								title="Remove ingredient"
-								onclick={() => removeIngredient(i)}
+			<div class="ingredients">
+				<h3 id="{id}-ingredients">Ingredients</h3>
+				<div class="list">
+					<ul aria-labelledby="{id}-ingredients" bind:this={list}>
+						{#each chapter.ingredients as ing, i (ing.key)}
+							<li
+								class="row"
+								class:dragging={sort.dragging === i}
+								data-sort
 							>
-								<Icon name="x" />
-							</button>
-						</span>
-					</li>
-				{/each}
-			</ul>
-			<button
-				type="button"
-				class="add"
-				aria-label="Add an ingredient"
-				title="Add an ingredient"
-				onclick={addIngredient}
-			>
-				<Icon name="plus" />
-			</button>
-		</div>
+								<span class="cell icon grip">
+									<MoveButton
+										look="cell"
+										label="Move ingredient {i + 1}"
+										canUp={i > 0}
+										canDown={i <
+											chapter.ingredients.length - 1}
+										sortable={sort}
+										index={i}
+										onmove={dir => moveIngredient(i, dir)}
+									/>
+								</span>
+								<span class="cell name">
+									<input
+										type="text"
+										placeholder="Ingredient"
+										aria-label="Ingredient {i + 1}"
+										bind:value={ing.name}
+									/>
+								</span>
+								<span class="cell amount">
+									<input
+										type="number"
+										inputmode="decimal"
+										step="any"
+										min="0"
+										placeholder="Amount"
+										aria-label="Amount of ingredient {i +
+											1}"
+										bind:value={ing.amount}
+									/>
+									<ChipSelect
+										bind:value={ing.unit}
+										options={UNIT_OPTIONS}
+										label="Unit of ingredient {i + 1}"
+									/>
+								</span>
+								<span class="cell icon">
+									<button
+										type="button"
+										class="remove"
+										aria-label="Remove ingredient {i + 1}"
+										title="Remove ingredient"
+										onclick={() => removeIngredient(i)}
+									>
+										<Icon name="x" />
+									</button>
+								</span>
+							</li>
+						{/each}
+					</ul>
+					<SortLine sortable={sort} />
+				</div>
+				<button
+					type="button"
+					class="add"
+					aria-label="Add an ingredient"
+					title="Add an ingredient"
+					onclick={addIngredient}
+				>
+					<Icon name="plus" />
+				</button>
+			</div>
 
-		<div class="steps">
-			<label for="{id}-steps">Instructions / Description</label>
-			<textarea
-				id="{id}-steps"
-				class="box"
-				rows="10"
-				placeholder="Start typing …&#10;An empty line starts the next step."
-				bind:value={chapter.text}
-			></textarea>
-		</div>
-	{:else}
-		<div class="collapsed">
-			<button
-				type="button"
-				class="name-button"
-				onclick={() => (chapter.open = true)}
-			>
-				{name}
-			</button>
-			{@render buttons()}
+			<div class="steps">
+				<label for="{id}-steps">Instructions / Description</label>
+				<textarea
+					id="{id}-steps"
+					class="box"
+					rows="10"
+					placeholder="Start typing …&#10;An empty line starts the next step."
+					bind:value={chapter.text}
+				></textarea>
+			</div>
 		</div>
 	{/if}
 </section>
@@ -181,26 +208,33 @@
 <style lang="scss">
 	.chapter {
 		background: var(--bg-card);
+		transition: opacity 0.3s ease;
 	}
 
-	.open {
-		display: flex;
-		flex-direction: column;
-		gap: 2rem;
-		padding: 1.25rem;
+	.dragging {
+		opacity: 0.4;
 	}
 
+	// the handle on the left, its circle in line with the fields
 	.head {
 		display: flex;
-		flex-direction: column-reverse;
-		gap: 1.25rem;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.25rem 0.75rem calc(1.25rem - 0.25rem);
 	}
 
 	.buttons {
 		display: flex;
 		flex-shrink: 0;
-		justify-content: flex-end;
 		gap: 0.125rem;
+		margin-right: -0.25rem;
+	}
+
+	.body {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		padding: 0.5rem 1.25rem 1.25rem;
 	}
 
 	label,
@@ -232,17 +266,23 @@
 		opacity: 1;
 	}
 
+	.list {
+		position: relative;
+	}
+
 	ul {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
 	}
 
-	// mobile: the name above, the amount with the handles below
+	// mobile: the handle on the left, the name above the amount
 	.row {
 		display: grid;
-		grid-template-columns: 1fr 3rem 3rem;
+		grid-template-columns: 3rem 1fr 3rem;
 		border: 1px solid var(--line);
+		background: var(--bg-card);
+		transition: opacity 0.3s ease;
 	}
 
 	.cell {
@@ -258,7 +298,7 @@
 	}
 
 	.name {
-		grid-column: 1 / -1;
+		grid-column: 2 / -1;
 		border-bottom: 1px solid var(--line);
 	}
 
@@ -270,6 +310,13 @@
 	.icon {
 		justify-content: center;
 		border-left: 1px solid var(--line);
+	}
+
+	.grip {
+		height: auto;
+		grid-row: span 2;
+		border-right: 1px solid var(--line);
+		border-left: 0;
 	}
 
 	.cell input {
@@ -324,14 +371,6 @@
 		resize: vertical;
 	}
 
-	.collapsed {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem;
-		padding: 0.75rem 1rem 0.75rem 1rem;
-	}
-
 	.name-button {
 		min-width: 0;
 		flex: 1;
@@ -344,26 +383,21 @@
 	}
 
 	@include tablet {
-		.open {
-			padding: 2.5rem;
+		.head {
+			gap: 1rem;
+			padding: 1.25rem 2.5rem 1.25rem calc(2.5rem - 0.25rem);
 		}
 
-		.head {
-			flex-direction: row;
-			align-items: flex-start;
-			justify-content: space-between;
+		.body {
+			padding: 0.75rem 2.5rem 2.5rem;
 		}
 
 		.title-field {
 			width: calc(50% - 1.5rem);
 		}
 
-		.head .box {
+		.title-field .box {
 			padding: 0.75rem;
-		}
-
-		.collapsed {
-			padding: 1.25rem 2.5rem;
 		}
 
 		.name-button {
@@ -376,7 +410,7 @@
 
 		// desktop: one table, the rows share their lines
 		.row {
-			grid-template-columns: 1fr 1fr 3rem 3rem;
+			grid-template-columns: 3rem 1fr 1fr 3rem;
 
 			& + .row {
 				border-top: 0;
@@ -386,6 +420,11 @@
 		.name {
 			grid-column: auto;
 			border-bottom: 0;
+		}
+
+		.grip {
+			height: 3rem;
+			grid-row: auto;
 		}
 
 		.amount {

@@ -1,37 +1,47 @@
 <script lang="ts">
+	import { tick } from 'svelte';
 	import Icon from '../Icon.svelte';
+	import type { Sortable } from './sortable.svelte';
 
-	// the move handle of the design: a click opens "Move up / Move down",
-	// the arrow keys move directly
+	// the move handle of the design: dragging it moves its row (sortable),
+	// a click opens "Move up / Move down", the arrow keys move directly
 	let {
 		label,
 		look = 'round',
 		canUp,
 		canDown,
 		onmove,
+		sortable,
+		index,
 	}: {
 		label: string;
 		look?: 'round' | 'cell';
 		canUp: boolean;
 		canDown: boolean;
 		onmove: (dir: -1 | 1) => void;
+		sortable: Sortable;
+		index: number;
 	} = $props();
 
 	let open = $state(false);
 	let root: HTMLElement;
+	let handle: HTMLButtonElement;
 
-	function move(dir: -1 | 1) {
+	// the row moved in the page, the handle lost the focus
+	async function move(dir: -1 | 1) {
 		open = false;
 		onmove(dir);
+		await tick();
+		handle.focus();
 	}
 
 	function onkeydown(e: KeyboardEvent) {
 		if (e.key === 'ArrowUp' && canUp) {
 			e.preventDefault();
-			onmove(-1);
+			move(-1);
 		} else if (e.key === 'ArrowDown' && canDown) {
 			e.preventDefault();
-			onmove(1);
+			move(1);
 		} else if (e.key === 'Escape') {
 			open = false;
 		}
@@ -49,10 +59,12 @@
 		type="button"
 		class="handle"
 		aria-label={label}
-		title={label}
+		title="{label}: drag or click"
 		aria-expanded={open}
 		disabled={!canUp && !canDown}
-		onclick={() => (open = !open)}
+		bind:this={handle}
+		onpointerdown={e => sortable.start(e, index)}
+		onclick={() => !sortable.dragged && (open = !open)}
 		{onkeydown}
 	>
 		<span class="inner"><Icon name="move" /></span>
@@ -79,7 +91,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		cursor: pointer;
+		cursor: grab;
+		touch-action: none;
 
 		&:disabled {
 			opacity: 0.4;
@@ -87,11 +100,11 @@
 		}
 	}
 
+	// like RoundButton without its ring: only the ring's space
 	.look-round .handle {
 		padding: 0.1875rem;
-		border: 1px solid var(--line);
+		border: 1px solid transparent;
 		border-radius: 50%;
-		transition: border-color 0.3s ease;
 
 		.inner {
 			display: flex;
@@ -122,7 +135,7 @@
 	.menu {
 		position: absolute;
 		top: calc(100% + 0.25rem);
-		right: 0;
+		left: 0;
 		z-index: 20;
 		display: flex;
 		flex-direction: column;
@@ -154,13 +167,9 @@
 	}
 
 	@include hover {
-		.look-round .handle:not(:disabled):hover {
-			border-color: var(--accent);
-
-			.inner {
-				background: var(--accent);
-				color: var(--text-invert);
-			}
+		.look-round .handle:not(:disabled):hover .inner {
+			background: var(--accent);
+			color: var(--text-invert);
 		}
 
 		.look-cell .handle:not(:disabled):hover {

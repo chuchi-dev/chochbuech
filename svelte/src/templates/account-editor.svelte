@@ -19,6 +19,8 @@
 	import ChapterCard from '@/components/editor/ChapterCard.svelte';
 	import ImageField from '@/components/editor/ImageField.svelte';
 	import NumberField from '@/components/editor/NumberField.svelte';
+	import SortLine from '@/components/editor/SortLine.svelte';
+	import { Sortable, moved } from '@/components/editor/sortable.svelte';
 	import {
 		TIME_UNITS,
 		emptyForm,
@@ -132,6 +134,15 @@
 		const cs = form.chapters;
 		[cs[i], cs[i + dir]] = [cs[i + dir], cs[i]];
 	}
+
+	/** @type {HTMLElement | undefined} */
+	let chapterList = $state();
+	const chapterSort = new Sortable(
+		() => chapterList,
+		(from, to) => {
+			if (form) form.chapters = moved(form.chapters, from, to);
+		},
+	);
 
 	/** @param {number} i */
 	function removeChapter(i) {
@@ -344,16 +355,18 @@
 				</p>
 			{/if}
 
-			<div class="chapters">
+			<div class="chapters" bind:this={chapterList}>
 				{#each form.chapters as chapter, i (chapter.key)}
 					<ChapterCard
 						bind:chapter={form.chapters[i]}
 						index={i}
 						count={form.chapters.length}
+						sortable={chapterSort}
 						onmove={dir => moveChapter(i, dir)}
 						onremove={() => removeChapter(i)}
 					/>
 				{/each}
+				<SortLine sortable={chapterSort} />
 
 				<button type="button" class="add-chapter" onclick={addChapter}>
 					<span>add Chapter</span>
@@ -516,6 +529,7 @@
 	}
 
 	.chapters {
+		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 1.25rem;
@@ -526,17 +540,20 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		padding: 0.75rem 1rem;
-		border: 1px solid var(--bg-card);
+		padding: 0.75rem 1.25rem;
+		border: 1px dashed var(--accent-soft);
 		text-align: left;
 		cursor: pointer;
-		transition: border-color 0.3s ease;
+		transition:
+			border-color 0.3s ease,
+			background-color 0.3s ease;
 	}
 
+	// like the chapters' buttons, without the ring
 	.plus {
 		display: flex;
 		padding: 0.1875rem;
-		border: 1px solid var(--line);
+		border: 1px solid transparent;
 		border-radius: 50%;
 	}
 
@@ -619,6 +636,7 @@
 
 		.add-chapter:hover {
 			border-color: var(--accent);
+			background: var(--bg-card);
 
 			.plus-inner {
 				background: var(--accent);
