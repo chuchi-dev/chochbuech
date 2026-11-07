@@ -1,13 +1,15 @@
 <script lang="ts">
 	import Icon, { type IconName } from './Icon.svelte';
 
-	// a round icon button with the ring of the design, filled or outlined
+	// a round icon button with the ring of the design (or only its space,
+	// ring false), filled or outlined
 	let {
 		icon,
 		label,
 		filled = true,
 		active = false,
 		size = 'md',
+		ring = true,
 		href = null,
 		onclick,
 	}: {
@@ -16,6 +18,7 @@
 		filled?: boolean;
 		active?: boolean;
 		size?: 'sm' | 'md';
+		ring?: boolean;
 		href?: string | null;
 		onclick?: (e: MouseEvent) => void;
 	} = $props();
@@ -27,6 +30,7 @@
 	type={href ? undefined : 'button'}
 	class="round size-{size}"
 	class:filled
+	class:no-ring={!ring}
 	aria-label={label}
 	aria-pressed={href ? undefined : active}
 	title={label}
@@ -61,6 +65,10 @@
 			color 0.3s ease;
 	}
 
+	.no-ring {
+		border-color: transparent;
+	}
+
 	.size-sm .inner {
 		width: 2rem;
 		height: 2rem;
@@ -73,7 +81,7 @@
 	}
 
 	@include hover {
-		.round:hover {
+		.round:not(.no-ring):hover {
 			border-color: var(--accent);
 		}
 

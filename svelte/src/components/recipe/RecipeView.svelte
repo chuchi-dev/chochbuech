@@ -84,7 +84,7 @@
 	}
 
 	h1 {
-		margin-bottom: 1rem;
+		margin-bottom: 0.25rem;
 		text-wrap: balance;
 	}
 

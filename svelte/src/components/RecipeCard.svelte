@@ -53,7 +53,10 @@
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		transition: transform 0.6s ease;
+		opacity: 0.6;
+		transition:
+			transform 0.6s ease,
+			opacity 0.3s ease;
 	}
 
 	.title {
@@ -73,6 +76,7 @@
 
 	@include hover {
 		.card:hover img {
+			opacity: 1;
 			transform: scale(1.03);
 		}
 

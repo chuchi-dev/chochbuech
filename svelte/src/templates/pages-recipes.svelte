@@ -33,6 +33,9 @@
 
 	let { entry, recipes: first, total } = $props();
 
+	/** @type {HTMLInputElement | undefined} */
+	let searchInput = $state();
+
 	let more = $state([]);
 	let loading = $state(false);
 
@@ -44,6 +47,13 @@
 			urlWithSearch(entry.url, { category: slug, q: q || null }),
 		),
 	);
+
+	// the header's Search link opens the list with the focus in the field
+	// (its data-focus-search ends up in the route's context), no scrolling
+	$effect(() => {
+		if ($route.getContext('focusSearch') !== null)
+			searchInput?.focus({ preventScroll: true });
+	});
 
 	async function loadMore() {
 		loading = true;
@@ -66,7 +76,12 @@
 <div class="list narrow">
 	<h1 class="sr-only">{entry.title}</h1>
 	<div class="filters">
-		<SearchField action={entry.url} value={q} id="search" />
+		<SearchField
+			action={entry.url}
+			value={q}
+			id="search"
+			bind:input={searchInput}
+		/>
 		<Pills items={pills} {active} label="Categories" />
 	</div>
 

@@ -1,6 +1,8 @@
 $bpTablet: 768px;
 $bpDesktop: 1111px;
 $bpXlDesktop: 1220px;
+// the header shows its links instead of the menu
+$bpHeader: 960px;
 
 @mixin tablet {
 	@media (min-width: $bpTablet) {
@@ -117,5 +119,5 @@ $bpXlDesktop: 1220px;
 @mixin underline {
 	text-decoration: underline;
 	text-decoration-thickness: 1px;
-	text-underline-offset: 0.2em;
+	text-underline-offset: 0.3em;
 }

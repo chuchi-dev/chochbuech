@@ -38,7 +38,7 @@
 	<a class="logo" href={$site.url.href}>Chuchi Recipes</a>
 
 	<nav class="side right" aria-label="Account">
-		<a href="{listUrl}#search">Search</a>
+		<a href={listUrl} data-focus-search>Search</a>
 		{#if session.user}
 			<a href="/account">{session.user.name || 'My Account'}</a>
 		{:else}
@@ -66,7 +66,7 @@
 			{#each categories as c (c.id)}
 				<a href={c.url}>{c.title}</a>
 			{/each}
-			<a href="{listUrl}#search">Search</a>
+			<a href={listUrl} data-focus-search>Search</a>
 		</div>
 		<div class="buttons">
 			{#if session.user}
@@ -108,11 +108,14 @@
 		transition: opacity 0.3s ease;
 	}
 
+	// the design's bold italic serif; PP Editorial Old has no bold italic,
+	// the browser makes it bolder
 	.side .active {
 		font-family: var(--font-serif);
 		font-style: italic;
-		font-weight: 400;
-		font-size: 1.0625rem;
+		font-weight: 700;
+		font-size: 1.125rem;
+		line-height: 1;
 	}
 
 	.menu {
@@ -147,7 +150,8 @@
 		gap: 1rem;
 	}
 
-	@include desktop {
+	// the full header as soon as it fits, the menu below
+	@media (min-width: $bpHeader) {
 		.logo {
 			position: absolute;
 			left: 50%;
@@ -157,7 +161,7 @@
 		.side {
 			display: flex;
 			align-items: center;
-			gap: 1.5rem;
+			gap: 2rem;
 		}
 
 		.toggle,

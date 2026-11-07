@@ -48,7 +48,7 @@
 		position: absolute;
 		color: var(--doodle);
 		font-family: var(--font-hand);
-		font-weight: 500;
+		font-weight: 600;
 		font-size: 0.5em;
 		font-style: normal;
 		line-height: 1;

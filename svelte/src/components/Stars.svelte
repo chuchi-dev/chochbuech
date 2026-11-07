@@ -13,7 +13,7 @@
 
 <style lang="scss">
 	.stars {
-		font-size: 0.8125rem;
+		font-size: 1.125rem;
 		letter-spacing: 0.1em;
 	}
 </style>

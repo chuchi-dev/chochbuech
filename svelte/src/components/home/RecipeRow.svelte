@@ -29,6 +29,84 @@
 		});
 	}
 
+	// mouse drag; touch scrolls natively. While dragging the snapping is off,
+	// on release the track glides to the card nearest to where the throw ends
+	/** @type {{ x: number, left: number, moved: boolean, t: number, v: number } | null} */
+	let drag = null;
+	let dragging = $state(false);
+	let dragged = false;
+
+	/** @param {PointerEvent} e */
+	function down(e) {
+		if (!track || e.pointerType !== 'mouse' || e.button !== 0) return;
+		if (track.scrollWidth <= track.clientWidth) return;
+		drag = {
+			x: e.clientX,
+			left: track.scrollLeft,
+			moved: false,
+			t: e.timeStamp,
+			v: 0,
+		};
+		dragged = false;
+	}
+
+	/** @param {PointerEvent} e */
+	function move(e) {
+		if (!track || !drag) return;
+		const dx = e.clientX - drag.x;
+		if (!drag.moved) {
+			if (Math.abs(dx) < 5) return;
+			drag.moved = true;
+			dragging = true;
+			track.setPointerCapture(e.pointerId);
+		}
+		const left = drag.left - dx;
+		const dt = Math.max(e.timeStamp - drag.t, 1);
+		// px per ms of the scroll, smoothed
+		drag.v = 0.8 * ((left - track.scrollLeft) / dt) + 0.2 * drag.v;
+		drag.t = e.timeStamp;
+		track.scrollLeft = left;
+	}
+
+	/** @param {PointerEvent} e */
+	function up(e) {
+		if (!track || !drag) return;
+		const { moved, v, t } = drag;
+		drag = null;
+		if (!moved) return;
+		dragged = true;
+		// held still before letting go: no throw
+		const throwV = e.timeStamp - t > 100 ? 0 : v;
+		const target = track.scrollLeft + throwV * 300;
+		// the first card sits at the scroll padding
+		const cards = [...track.querySelectorAll('article')];
+		const pad = cards[0]?.offsetLeft ?? 0;
+		const max = track.scrollWidth - track.clientWidth;
+		const stops = cards.map(a => Math.min(a.offsetLeft - pad, max));
+		const left = stops.reduce(
+			(a, b) => (Math.abs(b - target) < Math.abs(a - target) ? b : a),
+			stops[0] ?? 0,
+		);
+		track.scrollTo({ left, behavior: 'smooth' });
+		// snapping back on only after the glide, else it would jump
+		const el = track;
+		const done = () => {
+			dragging = false;
+			el.removeEventListener('scrollend', done);
+		};
+		el.addEventListener('scrollend', done);
+		setTimeout(done, 800);
+	}
+
+	/** @param {MouseEvent} e */
+	function click(e) {
+		// a drag that ends on a card is no click on it
+		if (!dragged) return;
+		dragged = false;
+		e.preventDefault();
+		e.stopPropagation();
+	}
+
 	$effect(update);
 </script>
 
@@ -38,7 +116,20 @@
 	{#if marquee}
 		<Marquee text={marquee} />
 	{/if}
-	<div class="track" bind:this={track} onscroll={update}>
+	<div
+		class="track"
+		class:dragging
+		bind:this={track}
+		onscroll={update}
+		onpointerdown={down}
+		onpointermove={move}
+		onpointerup={up}
+		onpointercancel={up}
+		onclickcapture={click}
+		ondragstart={e => e.preventDefault()}
+		role="group"
+		aria-label="Recipes"
+	>
 		{#each recipes as recipe (recipe.id)}
 			<RecipeCard {recipe} sizes="20rem" />
 		{/each}
@@ -57,6 +148,7 @@
 					label="Back"
 					filled={false}
 					size="sm"
+					ring={false}
 					onclick={() => scroll(-1)}
 				/>
 				<RoundButton
@@ -64,6 +156,7 @@
 					label="Next"
 					filled={false}
 					size="sm"
+					ring={false}
 					onclick={() => scroll(1)}
 				/>
 			</div>
@@ -96,6 +189,16 @@
 		:global(article) {
 			scroll-snap-align: start;
 		}
+	}
+
+	.slider .track {
+		cursor: grab;
+	}
+
+	.track.dragging {
+		scroll-snap-type: none;
+		cursor: grabbing;
+		user-select: none;
 	}
 
 	.controls {

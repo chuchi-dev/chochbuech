@@ -61,6 +61,8 @@
 
 	.photo {
 		object-fit: cover;
+		opacity: 0.6;
+		transition: opacity 0.3s ease;
 	}
 
 	.photo-0 {
@@ -119,6 +121,12 @@
 			right: 0;
 			width: 20rem;
 			height: 30rem;
+		}
+	}
+
+	@include hover {
+		.photo:hover {
+			opacity: 1;
 		}
 	}
 </style>
