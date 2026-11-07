@@ -1,5 +1,6 @@
 <script>
 	import { getGlobal, getRoute, getSite, onRoute } from 'crelte';
+	import { getMock } from '@/lib/mock.svelte';
 	import { getSession } from '@/lib/session.svelte';
 	import Button from './Button.svelte';
 
@@ -8,6 +9,7 @@
 	const site = getSite();
 	const route = getRoute();
 	const session = getSession();
+	const mock = getMock();
 
 	let open = $state(false);
 
@@ -19,9 +21,11 @@
 		})),
 	);
 	let active = $derived($route.getSearchParam('category'));
-	let submitUrl = $derived(
-		session.user ? '/recipes/new' : '/sign-in?next=/recipes/new',
-	);
+	// a guest's favorites and planner are kept by the browser, without the
+	// account
+	let guestFavorites = $derived(!session.user && mock.favorites.length > 0);
+	// guests can't sign up, they get the invitation of /join
+	let submitUrl = $derived(session.user ? '/recipes/new' : '/join');
 
 	onRoute(() => (open = false));
 </script>
@@ -39,6 +43,9 @@
 
 	<nav class="side right" aria-label="Account">
 		<a href={listUrl} data-focus-search>Search</a>
+		{#if guestFavorites}
+			<a href="/account/favorites">Favorites</a>
+		{/if}
 		{#if session.user}
 			<a href="/account">{session.user.name || 'My Account'}</a>
 		{:else}
@@ -67,6 +74,9 @@
 				<a href={c.url}>{c.title}</a>
 			{/each}
 			<a href={listUrl} data-focus-search>Search</a>
+			{#if guestFavorites}
+				<a href="/account/favorites">Favorites</a>
+			{/if}
 		</div>
 		<div class="buttons">
 			{#if session.user}

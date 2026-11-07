@@ -1,11 +1,13 @@
 <script>
 	import { getRoute, getRouter } from 'crelte';
 	import Button from '@/components/Button.svelte';
+	import Join from '@/components/Join.svelte';
 	import { errorMessage, getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
 	// logging in with a zipp account; `?next=` goes there after. There is no
-	// sign up yet, we create the accounts.
+	// sign up yet, we create the accounts: `?register` (the home's Sign up
+	// now) shows a guest the invitation instead of the form.
 	let { entry } = $props();
 
 	const route = getRoute();
@@ -14,6 +16,7 @@
 	const toasts = getToasts();
 
 	let next = $derived(safeNext($route.getSearchParam('next')));
+	let register = $derived($route.getSearchParam('register') !== null);
 
 	let email = $state('');
 	let password = $state('');
@@ -58,57 +61,61 @@
 	<title>{entry.title} | Chuchi Recipes</title>
 </svelte:head>
 
-<div class="sign-in">
-	<h1 class="h1"><i>{entry.title}</i></h1>
+{#if register && !session.user}
+	<Join title="Share your Recipes" signIn="/sign-in" />
+{:else}
+	<div class="sign-in">
+		<h1 class="h1"><i>{entry.title}</i></h1>
 
-	{#if session.user}
-		<p class="signed-in">
-			You are signed in as <strong>{session.user.name}</strong>
-			({session.user.email}).
-		</p>
-		<div class="buttons">
-			<Button href="/account">My Recipes</Button>
-			<Button look="secondary" onclick={logOut}>Log out</Button>
-		</div>
-	{:else}
-		<form onsubmit={submit}>
-			<label>
-				<span>Email</span>
-				<input
-					type="email"
-					bind:value={email}
-					autocomplete="email"
-					required
-				/>
-			</label>
-			<label>
-				<span>Password</span>
-				<input
-					type="password"
-					bind:value={password}
-					autocomplete="current-password"
-					required
-				/>
-			</label>
-			{#if error}
-				<p class="error" role="alert">{error}</p>
-			{/if}
-			<div class="submit">
-				<Button type="submit" disabled={busy}>Sign In</Button>
+		{#if session.user}
+			<p class="signed-in">
+				You are signed in as <strong>{session.user.name}</strong>
+				({session.user.email}).
+			</p>
+			<div class="buttons">
+				<Button href="/account">My Recipes</Button>
+				<Button look="secondary" onclick={logOut}>Log out</Button>
 			</div>
-		</form>
+		{:else}
+			<form onsubmit={submit}>
+				<label>
+					<span>Email</span>
+					<input
+						type="email"
+						bind:value={email}
+						autocomplete="email"
+						required
+					/>
+				</label>
+				<label>
+					<span>Password</span>
+					<input
+						type="password"
+						bind:value={password}
+						autocomplete="current-password"
+						required
+					/>
+				</label>
+				{#if error}
+					<p class="error" role="alert">{error}</p>
+				{/if}
+				<div class="submit">
+					<Button type="submit" disabled={busy}>Sign In</Button>
+				</div>
+			</form>
 
-		<p class="switch">
-			<a href="/reset-password">Forgot your password?</a>
-		</p>
+			<p class="switch">
+				<a href="/reset-password">Forgot your password?</a>
+			</p>
 
-		<p class="note small">
-			Accounts are created by us for now, write us at
-			<a href="mailto:hello@chochbuech.com">hello@chochbuech.com</a>
-			.
-		</p>
-	{/if}
-</div>
+			<p class="note small">
+				Want to share your recipes? Accounts are by invitation for now:
+				write us at
+				<a href="mailto:hello@chochbuech.com">hello@chochbuech.com</a>
+			</p>
+		{/if}
+	</div>
+{/if}
 
 <style lang="scss">
 	.sign-in {

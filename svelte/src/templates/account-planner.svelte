@@ -96,7 +96,7 @@
 	}
 </script>
 
-<AccountLayout title={entry.title}>
+<AccountLayout title={entry.title} note="Saved in this browser." guests>
 	<div class="planner">
 		<section aria-labelledby="week">
 			<h2 id="week" class="sr-only">Your week</h2>

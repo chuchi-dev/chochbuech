@@ -1,11 +1,14 @@
 <script lang="ts">
-	// ★★★★☆ like the design, the rating rounded to whole stars
+	import { RATINGS } from '@/lib/features';
+
+	// ★★★★☆ like the design, the rating rounded to whole stars; hidden while
+	// ratings aren't real (lib/features.ts)
 	let { rating }: { rating: number | null } = $props();
 
 	let full = $derived(Math.round(rating ?? 0));
 </script>
 
-{#if rating}
+{#if RATINGS && rating}
 	<p class="stars" aria-label="Rated {rating} of 5">
 		<span aria-hidden="true">{'★'.repeat(full)}{'☆'.repeat(5 - full)}</span>
 	</p>

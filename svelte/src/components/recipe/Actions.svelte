@@ -1,14 +1,17 @@
 <script>
 	import { getRoute, getRouter } from 'crelte';
+	import { RATINGS } from '@/lib/features';
 	import { getMock } from '@/lib/mock.svelte';
 	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 	import RoundButton from '../RoundButton.svelte';
 
 	// favorite, rate and change a recipe: the buttons on the image's edge.
-	// The star opens the five stars of the rating (Rating Toggle). The
-	// sliders edit it for its author, else (admins too) they start a recipe
-	// of the user from it.
+	// The heart works without an account, the favorites stay in this
+	// browser. The star (hidden while ratings aren't real, lib/features.ts)
+	// opens the five stars of the rating (Rating Toggle). The sliders edit
+	// it for its author, else (admins too) they start a recipe of the user
+	// from it; a guest gets the editor's invitation to join.
 	let { id, authorId } = $props();
 
 	const mock = getMock();
@@ -29,16 +32,17 @@
 
 	function signInFirst() {
 		if (session.user) return false;
-		toasts.show('Sign in to keep your favorites and ratings.');
+		toasts.show('Sign in to rate recipes.');
 		router.open(`/sign-in?next=${encodeURIComponent($route.url.pathname)}`);
 		return true;
 	}
 
 	function toggleFavorite() {
-		if (signInFirst()) return;
 		const on = mock.toggleFavorite(id);
 		toasts.show(
-			on ? 'Added to your favorites.' : 'Removed from your favorites.',
+			on
+				? 'Added to your favorites. Saved in this browser.'
+				: 'Removed from your favorites.',
 		);
 	}
 
@@ -69,19 +73,19 @@
 				active={favorite}
 				onclick={toggleFavorite}
 			/>
-			<RoundButton
-				icon="star"
-				label={rated ? `You rated it ${rated} of 5` : 'Rate'}
-				active={rated > 0}
-				onclick={() => (signInFirst() ? null : (rating = true))}
-			/>
+			{#if RATINGS}
+				<RoundButton
+					icon="star"
+					label={rated ? `You rated it ${rated} of 5` : 'Rate'}
+					active={rated > 0}
+					onclick={() => (signInFirst() ? null : (rating = true))}
+				/>
+			{/if}
 		{/if}
 		<RoundButton
 			icon="sliders"
 			label={mine ? 'Edit' : 'Make it your own'}
-			href={user
-				? changeUrl
-				: `/sign-in?next=${encodeURIComponent(changeUrl)}`}
+			href={changeUrl}
 		/>
 	{/if}
 </div>

@@ -16,6 +16,7 @@
 	import { getCrelte, getGlobal, getRoute, getRouter } from 'crelte';
 	import Button from '@/components/Button.svelte';
 	import Icon from '@/components/Icon.svelte';
+	import Join from '@/components/Join.svelte';
 	import ChapterCard from '@/components/editor/ChapterCard.svelte';
 	import ImageField from '@/components/editor/ImageField.svelte';
 	import NumberField from '@/components/editor/NumberField.svelte';
@@ -222,11 +223,8 @@
 </svelte:head>
 
 {#if !session.user}
-	<div class="note narrow">
-		<h1 class="h1">{title}</h1>
-		<p class="lead">Sign in to write your own recipes.</p>
-		<Button href={signInUrl}>Sign In</Button>
-	</div>
+	<!-- the home's Submit your first Recipe and Make it your own too -->
+	<Join title="Share your Recipes" signIn={signInUrl} />
 {:else if problem === 'notYours'}
 	<div class="note narrow">
 		<h1 class="h1">{title}</h1>

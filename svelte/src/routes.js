@@ -17,6 +17,8 @@ const page = (typeHandle, title) => () => ({
 export function staticRoutes(router) {
 	router
 		.add('/sign-in', page('signIn', 'Sign In'))
+		// no sign up yet: where Submit Recipe leads a guest
+		.add('/join', page('join', 'Share your Recipes'))
 		// the links of reset and invite mails: ?token=
 		.add('/reset-password', page('resetPassword', 'Your Password'))
 		.add('/account', page('myRecipes', 'My Recipes'))
@@ -61,4 +63,10 @@ export const ACCOUNT_NAV = [
 	['/account/favorites', 'Favorites'],
 	['/account/planner', 'Weekly Planner'],
 	['/account/settings', 'Account'],
+];
+
+/** The pages a guest has too, kept by the browser: their navigation. */
+export const GUEST_NAV = [
+	['/account/favorites', 'Favorites'],
+	['/account/planner', 'Weekly Planner'],
 ];

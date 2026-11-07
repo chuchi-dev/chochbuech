@@ -4,7 +4,8 @@
 	import RoundButton from '../RoundButton.svelte';
 
 	// recipes under a running line; as a slider they scroll sideways out
-	// of the column to the right edge
+	// of the column to the right edge, the controls only when they don't
+	// all fit. Without a live recipe there is no row.
 	let { marquee, recipes, slider } = $props();
 
 	/** @type {HTMLElement | undefined} */
@@ -112,57 +113,60 @@
 
 <svelte:window onresize={update} />
 
-<section class="row" class:slider>
-	{#if marquee}
-		<Marquee text={marquee} />
-	{/if}
-	<div
-		class="track"
-		class:dragging
-		bind:this={track}
-		onscroll={update}
-		onpointerdown={down}
-		onpointermove={move}
-		onpointerup={up}
-		onpointercancel={up}
-		onclickcapture={click}
-		ondragstart={e => e.preventDefault()}
-		role="group"
-		aria-label="Recipes"
-	>
-		{#each recipes as recipe (recipe.id)}
-			<RecipeCard {recipe} sizes="20rem" />
-		{/each}
-	</div>
-	{#if slider && visible < 1}
-		<div class="controls">
-			<div class="bar">
-				<span
-					style:width="{visible * 100}%"
-					style:left="{progress * (1 - visible) * 100}%"
-				></span>
-			</div>
-			<div class="arrows">
-				<RoundButton
-					icon="left"
-					label="Back"
-					filled={false}
-					size="sm"
-					ring={false}
-					onclick={() => scroll(-1)}
-				/>
-				<RoundButton
-					icon="right"
-					label="Next"
-					filled={false}
-					size="sm"
-					ring={false}
-					onclick={() => scroll(1)}
-				/>
-			</div>
+{#if recipes?.length}
+	<section class="row" class:slider>
+		{#if marquee}
+			<Marquee text={marquee} />
+		{/if}
+		<div
+			class="track"
+			class:scrolls={visible < 1}
+			class:dragging
+			bind:this={track}
+			onscroll={update}
+			onpointerdown={down}
+			onpointermove={move}
+			onpointerup={up}
+			onpointercancel={up}
+			onclickcapture={click}
+			ondragstart={e => e.preventDefault()}
+			role="group"
+			aria-label="Recipes"
+		>
+			{#each recipes as recipe (recipe.id)}
+				<RecipeCard {recipe} sizes="20rem" />
+			{/each}
 		</div>
-	{/if}
-</section>
+		{#if slider && visible < 1}
+			<div class="controls">
+				<div class="bar">
+					<span
+						style:width="{visible * 100}%"
+						style:left="{progress * (1 - visible) * 100}%"
+					></span>
+				</div>
+				<div class="arrows">
+					<RoundButton
+						icon="left"
+						label="Back"
+						filled={false}
+						size="sm"
+						ring={false}
+						onclick={() => scroll(-1)}
+					/>
+					<RoundButton
+						icon="right"
+						label="Next"
+						filled={false}
+						size="sm"
+						ring={false}
+						onclick={() => scroll(1)}
+					/>
+				</div>
+			</div>
+		{/if}
+	</section>
+{/if}
 
 <style lang="scss">
 	.row {
@@ -191,7 +195,7 @@
 		}
 	}
 
-	.slider .track {
+	.slider .track.scrolls {
 		cursor: grab;
 	}
 
