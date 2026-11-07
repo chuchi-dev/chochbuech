@@ -41,10 +41,13 @@
 </nav>
 
 <style lang="scss">
+	// the same space as between the visible circles of the slider arrows
+	// (RecipeRow), also between wrapped lines
 	.pills {
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: center;
+		gap: 0.5rem;
 	}
 
 	a,
