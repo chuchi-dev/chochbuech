@@ -25,11 +25,12 @@
 	import Pills from '@/components/Pills.svelte';
 	import RecipeGrid from '@/components/RecipeGrid.svelte';
 	import SearchField from '@/components/SearchField.svelte';
-	import { categoryPills } from '@/lib/lists.js';
+	import { categoryPills, liveOnly } from '@/lib/lists.js';
 
 	const crelte = getCrelte();
 	const route = getRoute();
 	const categories = getGlobal('categories');
+	const liveCategories = getGlobal('liveCategories');
 
 	let { entry, recipes: first, total } = $props();
 
@@ -43,7 +44,9 @@
 	let q = $derived($route.getSearchParam('q') ?? '');
 	let active = $derived($route.getSearchParam('category') ?? '');
 	let pills = $derived(
-		categoryPills($categories, slug =>
+		// the categories without a live recipe have no pill, their
+		// ?category= finds no recipes
+		categoryPills(liveOnly($categories, $liveCategories), slug =>
 			urlWithSearch(entry.url, { category: slug, q: q || null }),
 		),
 	);

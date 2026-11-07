@@ -13,6 +13,17 @@ export function categoryId(categories, slug) {
 }
 
 /**
+ * The categories with a live recipe, from the global `liveCategories`.
+ *
+ * @param {any[] | null} categories
+ * @param {any[] | null} live
+ */
+export function liveOnly(categories, live) {
+	const ids = new Set((live ?? []).map(c => c.id));
+	return (categories ?? []).filter(c => ids.has(c.id));
+}
+
+/**
  * The pills of the category filter: All and the categories.
  *
  * @param {any[] | null} categories

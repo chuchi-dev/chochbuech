@@ -2,10 +2,12 @@
 	import { getGlobal, getRoute, getSite, onRoute } from 'crelte';
 	import { getMock } from '@/lib/mock.svelte';
 	import { getSession } from '@/lib/session.svelte';
+	import { liveOnly } from '@/lib/lists.js';
 	import Button from './Button.svelte';
 
 	const header = getGlobal('header');
 	const recipesPage = getGlobal('recipesPage');
+	const liveCategories = getGlobal('liveCategories');
 	const site = getSite();
 	const route = getRoute();
 	const session = getSession();
@@ -14,8 +16,9 @@
 	let open = $state(false);
 
 	let listUrl = $derived($recipesPage?.url ?? '/recipes');
+	// only the categories with a live recipe
 	let categories = $derived(
-		($header?.categories ?? []).map(c => ({
+		liveOnly($header?.categories, $liveCategories).map(c => ({
 			...c,
 			url: `${listUrl}?category=${c.slug}`,
 		})),

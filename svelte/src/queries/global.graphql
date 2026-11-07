@@ -29,6 +29,15 @@ query ($siteId: [QueryArgument]) {
       singular
     }
   }
+  # the categories with a live recipe: only they show in the header and as
+  # filters
+  liveCategories: entries(
+    section: "categories"
+    siteId: $siteId
+    relatedToEntries: [{ section: "recipes" }]
+  ) {
+    id
+  }
   # where the header's links go
   recipesPage: entry(section: "pages", type: "recipes", siteId: $siteId) {
     url

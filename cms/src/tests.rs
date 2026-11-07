@@ -11,6 +11,7 @@ use crate::content::schema;
 const RECIPES: &str = include_str!("../../svelte/src/queries/recipes.graphql");
 const ENTRY: &str = include_str!("../../svelte/src/queries/entry.graphql");
 const COOK: &str = include_str!("../../svelte/src/queries/cook.graphql");
+const GLOBAL: &str = include_str!("../../svelte/src/queries/global.graphql");
 
 // a 1x1 png
 const PNG: &[u8] = &[
@@ -147,6 +148,33 @@ async fn the_list_searches_and_filters_by_category() {
 		.graphql(RECIPES, json!({ "category": [drinks.to_string()] }))
 		.await;
 	assert_eq!(drinks_only["data"]["recipes"][0]["author"], Value::Null);
+}
+
+#[tokio::test]
+async fn only_categories_with_a_live_recipe_show() {
+	let ts = TestServer::new(schema());
+	let admin = ts.admin();
+	let mut ids = vec![];
+	for title in ["Appetisers", "Main Courses", "Desserts"] {
+		let fields = json!({ "singular": title });
+		ids.push(create(&admin, "categories", "category", title, fields).await);
+	}
+	let fields = json!({ "category": [ids[0]], "serves": 2 });
+	create(&admin, "recipes", "recipe", "Beetroot salad", fields).await;
+	// a draft doesn't count
+	let image = photo(&admin).await;
+	let fields = json!({ "category": [ids[1]], "serves": 2, "image": [image] });
+	let mut draft = input("recipes", "recipe", "Gratin", fields);
+	draft.published = false;
+	admin.call(&CreateReq(draft)).await.unwrap();
+
+	let data = ts.graphql(GLOBAL, json!({ "siteId": [1] })).await;
+	assert_eq!(data["data"]["categories"].as_array().unwrap().len(), 3);
+	assert_eq!(
+		data["data"]["liveCategories"],
+		json!([{ "id": ids[0].to_string() }]),
+		"{data}"
+	);
 }
 
 #[tokio::test]

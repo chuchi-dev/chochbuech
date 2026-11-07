@@ -39,9 +39,19 @@
 			.filter(Boolean)
 			.reverse(),
 	);
+	// the pills: the categories of the favorites
+	let pills = $derived(
+		categoryPills(
+			($categories ?? []).filter(c =>
+				favorites.some(r => r.category?.[0]?.id === c.id),
+			),
+		),
+	);
+	// All again once the last favorite of the category is gone
+	let selected = $derived(pills.some(p => p.key === active) ? active : '');
 	let shown = $derived(
-		active
-			? favorites.filter(r => r.category?.[0]?.slug === active)
+		selected
+			? favorites.filter(r => r.category?.[0]?.slug === selected)
 			: favorites,
 	);
 </script>
@@ -50,8 +60,8 @@
 	{#snippet intro()}
 		{#if favorites.length}
 			<Pills
-				items={categoryPills($categories)}
-				{active}
+				items={pills}
+				active={selected}
 				label="Categories"
 				onselect={key => (active = key)}
 			/>
