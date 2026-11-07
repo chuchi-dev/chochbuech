@@ -4,14 +4,13 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
-# zipp from feat/user-profiles until the public profiles of users (the
-# cooks are the members, user fields and pages) are merged and released
+# zipp from main until a release has website members and user profiles
 [dependencies]
-zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "feat/user-profiles" }
-zipp-seo = { git = "https://github.com/zipp-cms/zipp-next", branch = "feat/user-profiles" }
-zipp-members = { git = "https://github.com/zipp-cms/zipp-next", branch = "feat/user-profiles" }
+zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
+zipp-seo = { git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
+zipp-members = { git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
 
 [dev-dependencies]
 serde_json = "1.0"
 tokio = { version = "1.45", features = ["rt-multi-thread", "macros"] }
-zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "feat/user-profiles", features = ["testing"] }
+zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main", features = ["testing"] }
