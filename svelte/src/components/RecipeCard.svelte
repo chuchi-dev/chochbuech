@@ -46,7 +46,8 @@
 		margin-bottom: 1.5rem;
 		overflow: hidden;
 		aspect-ratio: 3 / 4;
-		background: var(--line);
+		// the faded image blends with the page's color, nothing shows through
+		background: var(--bg);
 	}
 
 	img {
