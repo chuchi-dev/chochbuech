@@ -4,13 +4,12 @@ version = "0.1.0"
 edition = "2024"
 publish = false
 
-# zipp from main until a release has website members and user profiles
 [dependencies]
-zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
-zipp-seo = { git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
-zipp-members = { git = "https://github.com/zipp-cms/zipp-next", branch = "main" }
+zipp = { package = "zipp-cms", version = "0.2" }
+zipp-seo = "0.2"
+zipp-members = "0.2"
 
 [dev-dependencies]
 serde_json = "1.0"
 tokio = { version = "1.45", features = ["rt-multi-thread", "macros"] }
-zipp = { package = "zipp-cms", git = "https://github.com/zipp-cms/zipp-next", branch = "main", features = ["testing"] }
+zipp = { package = "zipp-cms", version = "0.2", features = ["testing"] }
