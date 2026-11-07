@@ -5,10 +5,11 @@ Read `README.md` first. The backend is zipp (`cms/`), the website crelte
 
 ## The cms
 
-- `cms/src/content.rs` is the content model. While the site isn't live, a
-  change of the schema regenerates `migrations/0001_initial.json`
-  (`cargo run -- makemigration`, delete the old file first) instead of adding
-  migrations; real migrations start with the launch.
+- `cms/src/content.rs` is the content model. The site is live (chochbuech.com
+  since 2026-11-07): every change of the schema gets a migration of its own
+  (`cargo run -- makemigration`, renames as hints, `--rename`), never edit
+  or regenerate the existing ones; check it against a copy of the live data
+  before a deploy (docs/deploy.md).
 - `cms/src/tests.rs` runs the website's GraphQL queries
   (`include_str!` of `svelte/src/queries`) against a TestServer: when a query
   or the model changes, keep them passing and add a case for new behaviour.
