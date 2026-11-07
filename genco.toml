@@ -1,0 +1,21 @@
+# genco deploy config for chochbuech (zipp cms + crelte website), see
+# docs/deploy.md. shared/ holds what survives releases: the cms data
+# (zipp.db, files/, backups/) and both .env files.
+shared = ["cms/.env", "cms/data", "craft/.env"]
+
+# The cms builds on a genco runner (a container matching the server),
+# only the binary comes back into the release.
+[[build]]
+dir = "cms"
+on = "runner"
+run = "cargo build --release --locked && cp target/release/chochbuech-cms ."
+artifacts = ["chochbuech-cms"]
+
+# the schema, the migrations and the website's queries
+[[build]]
+dir = "cms"
+run = "./chochbuech-cms check --queries ../svelte/src/queries"
+
+[[build]]
+dir = "svelte"
+run = "npm ci --no-audit --no-fund && npm run build"

@@ -147,7 +147,7 @@ export async function jsonFromThisSite(csr) {
 }
 
 /**
- * The visitor's address: the proxy in front of this server (Caddy) adds
+ * The visitor's address: the proxy in front of this server (genco's nginx) adds
  * it at the end of X-Forwarded-For, what the visitor wrote before it
  * doesn't count. crelte gives no socket address.
  *

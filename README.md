@@ -88,6 +88,14 @@ cd svelte && npm install && npm run dev
 - Checks: `cd cms && cargo test && cargo run -- check --queries ../svelte/src/queries`,
   `cd svelte && npm run check`.
 
+### Deploy
+
+The site runs on a server with the hosting panel genco, which deploys the
+branch `zipp` with `genco.toml`: the cms on `admin.chochbuech.com`, the
+website on `chochbuech.com`. The setup, the settings (`cms/.env.example`,
+`craft/.env.example`), the first data and the backups are in
+[docs/deploy.md](docs/deploy.md).
+
 ### License
 
 MIT or Apache-2.0, see `LICENSE-MIT` and `LICENSE-APACHE`.
