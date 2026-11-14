@@ -82,8 +82,9 @@ async fn images(
 	Ok(Json(out))
 }
 
-/// Whether the user uploaded the asset or a live entry shows it. Not
-/// "in one of their entries": a member can put any id into their own.
+/// Whether the user uploaded the asset or a live entry shows it (published,
+/// in its post and expiry date, like zipp's `LIVE_DATES`). Not "in one of
+/// their entries": a member can put any id into their own.
 fn is_theirs(conn: &Connection, asset: i64, user: i64) -> Result<bool> {
 	let found = conn
 		.query_row(
@@ -92,7 +93,10 @@ fn is_theirs(conn: &Connection, asset: i64, user: i64) -> Result<bool> {
 				JOIN entry_sites s ON s.entry_id = r.entry_id AND s.site = r.site
 				JOIN entries e ON e.id = r.entry_id
 				WHERE r.asset_id = a.id AND s.published = 1
-				AND e.deleted_at IS NULL))",
+				AND e.deleted_at IS NULL AND (e.post_date IS NULL
+					OR e.post_date <= ROUND((julianday('now') - 2440587.5) * 86400000))
+				AND (e.expiry_date IS NULL
+					OR e.expiry_date > ROUND((julianday('now') - 2440587.5) * 86400000))))",
 			params![asset, user],
 			|_| Ok(()),
 		)
