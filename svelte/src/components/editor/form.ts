@@ -410,11 +410,10 @@ export function fieldErrors(list: FieldError[]): Errors {
 		chapters: 'chapters',
 	};
 	for (const e of list) {
-		// zipp's slugs are the titles, unique in the section (private
-		// recipes too)
-		if (e.path === 'slug' && e.message.includes('already used')) {
-			errors.title ??=
-				'There is already a recipe with this title, please give yours another one.';
+		// zipp makes the slug of the title, a used one gets -2, -3, …; its
+		// rare errors (a title without letters) don't name other recipes
+		if (e.path === 'slug') {
+			errors.title ??= 'Please give your recipe another title.';
 			continue;
 		}
 		const key = keys[e.path.split('.')[0]] ?? 'chapters';

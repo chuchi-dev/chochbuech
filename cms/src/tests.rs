@@ -570,3 +570,65 @@ async fn private_recipes_are_only_their_authors() {
 	assert_eq!(saved["entry"]["published"], false, "{saved}");
 	assert_eq!(ts.graphql(RECIPES, json!({})).await["data"]["total"], 0);
 }
+
+#[tokio::test]
+async fn a_used_title_gets_a_number_and_photos_stay_their_own() {
+	let ts = TestServer::new(schema());
+	let mains = create(
+		&ts.admin(),
+		"categories",
+		"category",
+		"Main Courses",
+		json!({ "singular": "Main Course" }),
+	)
+	.await;
+	let (lea, _) = member(&ts, "Léa Linster").await;
+	let (mario, _) = member(&ts, "Mario Bernasconi").await;
+	// a copy or an import keeps the title of a recipe that exists, here
+	// a private one of someone else: it saves, and says nothing of it
+	let rosti = |published| {
+		json!({
+			"section": "recipes",
+			"type": "recipe",
+			"title": "Rösti",
+			"fields": { "serves": 2 },
+			"published": published,
+		})
+	};
+	let (status, first) =
+		send(&mario, "POST", "/members/entries", rosti(false)).await;
+	assert_eq!(status, 200, "{first}");
+	assert_eq!(first["slug"], "roesti");
+	let (status, copy) =
+		send(&lea, "POST", "/members/entries", rosti(false)).await;
+	assert_eq!(status, 200, "{copy}");
+	assert_eq!(copy["slug"], "roesti-2");
+	assert_eq!(copy["published"], false);
+	// a change keeps its slug
+	let path = format!("/members/entries/{}", copy["id"]);
+	let change = json!({ "title": "Rösti", "fields": { "serves": 3 } });
+	let (status, saved) = send(&lea, "PUT", &path, change).await;
+	assert_eq!(status, 200, "{saved}");
+	assert_eq!(saved["entry"]["slug"], "roesti-2", "{saved}");
+
+	// Mario's private photo isn't Léa's to show
+	let resp = mario.upload("/members/assets", &[("dish.png", PNG)]).await;
+	let theirs: Value = Client::json(resp).await.unwrap();
+	let fields = json!({ "category": [mains], "image": [theirs["id"]] });
+	let publish =
+		json!({ "title": "Rösti", "fields": fields, "published": true });
+	let (status, err) = send(&lea, "PUT", &path, publish).await;
+	assert_eq!(status, 400, "{err}");
+	assert_eq!(err["error"]["detail"][0]["path"], "image", "{err}");
+	assert_eq!(ts.graphql(RECIPES, json!({})).await["data"]["total"], 0);
+	// her own is
+	let resp = lea.upload("/members/assets", &[("dish.png", PNG)]).await;
+	let hers: Value = Client::json(resp).await.unwrap();
+	let fields = json!({ "category": [mains], "image": [hers["id"]] });
+	let publish =
+		json!({ "title": "Rösti", "fields": fields, "published": true });
+	let (status, saved) = send(&lea, "PUT", &path, publish).await;
+	assert_eq!((status, &saved["saved"]), (200, &json!("live")), "{saved}");
+	let list = ts.graphql(RECIPES, json!({})).await;
+	assert_eq!(list["data"]["total"], 1, "{list}");
+}

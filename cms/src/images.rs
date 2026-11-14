@@ -1,8 +1,11 @@
 //! The images of a member's private recipes for the website: an entry of
-//! zipp-members names its images by id, GraphQL only has the images of
-//! live entries and no asset by id. It only answers the images a member
-//! uploaded and those of live entries (public anyway, like the photo of a
-//! recipe an admin made for them), never another member's private photo.
+//! zipp-members names its images by id. It only answers the images a
+//! member uploaded and those of live entries (public anyway, like the
+//! photo of a recipe an admin made for them), never another member's
+//! private photo. Not GraphQL's `assets(id:)`: crelte's server runs the
+//! queries for any visitor with the site's token, which reads every
+//! asset, so counting up the ids would give the urls of all private
+//! photos (the filename in the url is all that keeps them).
 
 use serde::{Deserialize, Serialize};
 use zipp::AppState;

@@ -3176,6 +3176,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2c754d6c33795a1c324727428e5a7dedb5b06195f9890bdbcba760d3e246563"
 
 [[package]]
+name = "unicode-normalization"
+version = "0.1.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75cd3fb03d5288b3ba9a1ee103ac7e9cbb59f0b03d64f8ddfcc04dd42758a85d"
+dependencies = [
+ "tinyvec",
+]
+
+[[package]]
 name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3657,7 +3666,7 @@ dependencies = [
 [[package]]
 name = "zipp-cms"
 version = "0.2.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#41f1b97be2425678aba2921b4e7fe069f732dad3"
 dependencies = [
  "async-graphql",
  "async-graphql-axum",
@@ -3686,6 +3695,7 @@ dependencies = [
  "tower-http",
  "tracing",
  "tracing-subscriber",
+ "unicode-normalization",
  "webp",
  "zip",
 ]
@@ -3693,7 +3703,7 @@ dependencies = [
 [[package]]
 name = "zipp-members"
 version = "0.2.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#41f1b97be2425678aba2921b4e7fe069f732dad3"
 dependencies = [
  "serde",
  "serde_json",
@@ -3703,7 +3713,7 @@ dependencies = [
 [[package]]
 name = "zipp-seo"
 version = "0.2.0"
-source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#41f1b97be2425678aba2921b4e7fe069f732dad3"
 dependencies = [
  "serde",
  "serde_json",
