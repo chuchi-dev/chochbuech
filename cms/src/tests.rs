@@ -550,6 +550,15 @@ async fn private_recipes_are_only_their_authors() {
 		"{found}"
 	);
 	assert_eq!(ts.visitor(None).get(&images).await.status().as_u16(), 401);
+	// nobody else gets the photo of a private recipe, nor an image of no
+	// live entry
+	let resp = mario.get(&images).await;
+	let found: Value = Client::json(resp).await.unwrap();
+	assert_eq!(found, json!([]));
+	let unused = photo(&ts.admin()).await;
+	let resp = lea.get(&format!("/members/images?ids={unused}")).await;
+	let found: Value = Client::json(resp).await.unwrap();
+	assert_eq!(found, json!([]));
 
 	// published, then private again
 	let (status, saved) = send(&lea, "PUT", &path, publish).await;
