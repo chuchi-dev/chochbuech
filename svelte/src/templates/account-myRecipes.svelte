@@ -7,6 +7,8 @@
 	 *   image: any,
 	 *   view: string | null,
 	 *   edit: string,
+	 *   private: boolean,
+	 *   entry: import('@/lib/members').MemberEntry,
 	 * }} Row
 	 */
 </script>
@@ -16,30 +18,48 @@
 	import imagesQuery from '@/queries/recipesById.graphql';
 	import AccountLayout from '@/components/AccountLayout.svelte';
 	import Button from '@/components/Button.svelte';
+	import Pills from '@/components/Pills.svelte';
 	import RoundArrow from '@/components/RoundArrow.svelte';
 	import {
 		deleteEntry,
 		errorMessage,
 		forgetQueries,
+		getImages,
 		listRecipes,
+		publishError,
+		setPublished,
 	} from '@/lib/members';
 	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
 	// the recipes of the user in zipp (they are its author), loaded in the
-	// browser through /members
+	// browser through /members: public ones and private ones (unpublished,
+	// only they see them, on /my-recipes/<id>)
 	let { entry } = $props();
 
 	const crelte = getCrelte();
 	const session = getSession();
 	const toasts = getToasts();
 
-	/** @type {Row[] | null} */
-	let rows = $state(null);
+	let rows = $state(/** @type {Row[] | null} */ (null));
 	/** @type {string | null} */
 	let failed = $state(null);
 	/** @type {string | null} */
 	let openKey = $state(null);
+	let filter = $state('all');
+	let busy = $state(false);
+
+	const FILTERS = [
+		{ key: 'all', label: 'All' },
+		{ key: 'private', label: 'Private' },
+		{ key: 'public', label: 'Public' },
+	];
+
+	let shown = $derived(
+		(rows ?? []).filter(
+			r => filter === 'all' || (filter === 'private') === r.private,
+		),
+	);
 
 	$effect(() => {
 		if (!session.user) return;
@@ -51,7 +71,8 @@
 		failed = null;
 		try {
 			const { entries } = await listRecipes();
-			// the images of the live recipes, zipp gives asset ids
+			// the images of the live recipes, zipp gives asset ids; the
+			// private ones aren't in GraphQL, their photos come by id
 			const ids = entries.filter(e => e.published).map(e => e.id);
 			/** @type {any[]} */
 			let live = [];
@@ -61,17 +82,27 @@
 				);
 				live = data.recipes ?? [];
 			}
+			const photos = await getImages(
+				entries
+					.filter(e => !e.published && e.fields.image?.length)
+					.map(e => e.fields.image[0]),
+			);
 			rows = entries.map(e => {
 				const r = live.find(r => r.id === String(e.id));
+				const photo = photos.find(p => p.id === e.fields.image?.[0]);
 				return {
 					id: e.id,
 					title: e.title || 'Untitled',
 					posted: e.published
 						? (r?.postDate ?? formatDate(e.postDate))
-						: 'Not published',
-					image: r?.image?.[0] ?? null,
-					view: e.published && r ? r.url : null,
+						: 'Only you see it',
+					private: !e.published,
+					image: e.published ? (r?.image?.[0] ?? null) : photo,
+					view: e.published
+						? (r?.url ?? null)
+						: `/my-recipes/${e.id}`,
 					edit: `/recipes/edit/${e.id}`,
+					entry: e,
 				};
 			});
 		} catch (e) {
@@ -94,6 +125,26 @@
 						: 'th';
 		const month = d.toLocaleString('en', { month: 'long' });
 		return `${month} ${day}${th}, ${d.getFullYear()}`;
+	}
+
+	/** Publishes a private recipe or makes a public one private. @param {Row} row */
+	async function toggle(row) {
+		if (busy) return;
+		busy = true;
+		try {
+			await setPublished(row.entry, row.private);
+			forgetQueries(crelte);
+			toasts.show(
+				row.private
+					? 'The recipe has been published.'
+					: 'The recipe is private now, only you see it.',
+			);
+			await load();
+		} catch (e) {
+			toasts.error(publishError(e));
+		} finally {
+			busy = false;
+		}
 	}
 
 	/** @param {Row} row */
@@ -127,9 +178,16 @@
 	{/if}
 {/snippet}
 
+{#snippet badge()}
+	<span class="badge small">Private</span>
+{/snippet}
+
 {#snippet actions(/** @type {Row} */ row)}
 	{#if row.view}<a href={row.view}>View</a>{/if}
 	<a href={row.edit}>Edit</a>
+	<button type="button" disabled={busy} onclick={() => toggle(row)}>
+		{row.private ? 'Publish' : 'Make private'}
+	</button>
 	<button type="button" onclick={() => remove(row)}>Delete</button>
 {/snippet}
 
@@ -149,7 +207,22 @@
 				<a href="/recipes/new">Write your first one.</a>
 			</p>
 		{:else}
-			<table class="table">
+			<div class="filters">
+				<Pills
+					items={FILTERS}
+					active={filter}
+					label="Show"
+					onselect={k => (filter = k)}
+				/>
+			</div>
+			{#if !shown.length}
+				<p class="empty">
+					{filter === 'private'
+						? 'No private recipes.'
+						: 'No public recipes yet.'}
+				</p>
+			{/if}
+			<table class="table" class:hidden={!shown.length}>
 				<thead>
 					<tr>
 						<th class="col-image">Image</th>
@@ -159,7 +232,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each rows as row (row.id)}
+					{#each shown as row (row.id)}
 						<tr>
 							<td class="col-image">
 								<a
@@ -177,6 +250,7 @@
 								{:else}
 									{row.title}
 								{/if}
+								{#if row.private}{@render badge()}{/if}
 							</td>
 							<td class="date">{row.posted}</td>
 							<td>
@@ -190,7 +264,7 @@
 			</table>
 
 			<ul class="accordion">
-				{#each rows as row (row.id)}
+				{#each shown as row (row.id)}
 					{@const open = openKey === String(row.id)}
 					<li>
 						<button
@@ -201,7 +275,10 @@
 							onclick={() =>
 								(openKey = open ? null : String(row.id))}
 						>
-							<span>{row.title}</span>
+							<span>
+								{row.title}
+								{#if row.private}{@render badge()}{/if}
+							</span>
 							<RoundArrow {open} />
 						</button>
 						{#if open}
@@ -228,6 +305,25 @@
 </AccountLayout>
 
 <style lang="scss">
+	.filters {
+		margin-bottom: 2rem;
+	}
+
+	.hidden {
+		display: none;
+	}
+
+	.badge {
+		display: inline-block;
+		margin-left: 0.5rem;
+		padding: 0 0.5rem;
+		border: 1px solid var(--accent-soft);
+		border-radius: 999px;
+		color: var(--accent-soft);
+		vertical-align: middle;
+		white-space: nowrap;
+	}
+
 	.empty {
 		color: var(--accent-soft);
 		text-align: center;

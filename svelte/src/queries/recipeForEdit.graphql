@@ -1,6 +1,7 @@
 # a recipe of zipp as the start of a new one: "Make it your own" of
-# someone else's recipe (their own ones the editor reads from
-# /members/entries, with the draft)
+# someone else's recipe, without their photos (their own ones the editor
+# reads from /members/entries, with the draft; the image is the preview of
+# their live one)
 query ($siteId: [QueryArgument], $id: [QueryArgument]) {
   recipe: entry(section: "recipes", siteId: $siteId, id: $id) {
     id
@@ -11,6 +12,9 @@ query ($siteId: [QueryArgument], $id: [QueryArgument]) {
       serves
       totalTime
       activeTime
+      source {
+        url
+      }
       category {
         id
       }
@@ -32,11 +36,6 @@ query ($siteId: [QueryArgument], $id: [QueryArgument]) {
             chunks {
               ... on Html {
                 html
-              }
-              ... on stepImage_Block {
-                image {
-                  id
-                }
               }
             }
           }

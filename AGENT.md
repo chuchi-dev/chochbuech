@@ -25,6 +25,11 @@ a pull request; a review merges it. The full checks before a merge:
   or the model changes, keep them passing and add a case for new behaviour.
 - `cargo run -- check --queries ../svelte/src/queries` checks every query
   against the schema.
+- `cms/src/assistant` is the recipe assistant: a model that answers a
+  recipe in the editor's shape (`Recipe`, checked by `Recipe::from_json`)
+  from a recipe and an input; a new feature with it (a wish that changes
+  a recipe, photos) is a task and its input for `assistant::ask`. Data
+  from outside goes in as `untrusted`, tests use a fake `Llm`.
 
 ## The website
 

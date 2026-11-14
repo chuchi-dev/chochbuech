@@ -44,7 +44,20 @@ export function memberRoutes(router) {
 				return cms(csr, 'DELETE', '/members/entries/' + id);
 			}),
 		)
-		.post('/members/assets', upload);
+		.post('/members/assets', upload)
+		// the images of a private recipe (cms/src/images.rs)
+		.get('/members/images', csr => {
+			const ids = new URL(csr.req.url).searchParams.get('ids') ?? '';
+			if (!/^\d+(,\d+)*$/.test(ids)) return error(400, 'ids');
+			const params = new URLSearchParams({ ids });
+			return cms(csr, 'GET', '/members/images', undefined, params);
+		})
+		// a recipe of another site for the editor (cms/src/import)
+		.post('/members/import', async csr => {
+			const body = await jsonFromThisSite(csr);
+			if (body instanceof Response) return body;
+			return cms(csr, 'POST', '/members/import', { url: body.url });
+		});
 }
 
 /**

@@ -53,6 +53,8 @@ export type ViewRecipe = {
 	// the author's name and page, Anonymous without a public author
 	cook: string | null;
 	cookUrl: string | null;
+	// the page of another site it is based on and that site, without www.
+	source: { url: string; site: string } | null;
 	rating: number | null;
 	serves: number;
 	totalTime: number | null;
@@ -82,6 +84,107 @@ function zippSteps(chunks: any[] | undefined) {
 	return steps;
 }
 
+/** The page an imported recipe is based on, only of another site. */
+export function sourceOf(url: string | null | undefined) {
+	if (!url) return null;
+	try {
+		const u = new URL(url);
+		if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+		return { url: u.href, site: u.hostname.replace(/^www\./, '') };
+	} catch {
+		return null;
+	}
+}
+
+type Node = { type: string; [k: string]: any };
+
+const escape = (s: string) =>
+	s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+/** The html of a paragraph of TipTap's JSON, its text without marks. */
+function paragraphHtml(p: Node): string {
+	return (p.content ?? [])
+		.map((n: Node) =>
+			n.type === 'text'
+				? escape(n.text ?? '')
+				: n.type === 'hardBreak'
+					? '<br>'
+					: '',
+		)
+		.join('');
+}
+
+/** The image ids of a member's recipe (its photo and step images), to
+ * load with `getImages`. */
+export function imageIds(fields: Record<string, any>): number[] {
+	const ids: number[] = [...(fields.image ?? [])];
+	for (const c of fields.chapters ?? []) {
+		for (const n of c.fields?.steps?.content ?? []) {
+			if (n.type === 'embed') ids.push(...(n.attrs?.fields?.image ?? []));
+		}
+	}
+	return ids;
+}
+
+/**
+ * A recipe of the user from /members (a private one isn't in GraphQL):
+ * its fields, the images by id and the category by id.
+ */
+export function fromMember(
+	entry: {
+		id: number;
+		title: string;
+		fields: Record<string, any>;
+	},
+	images: Map<
+		number,
+		{ url: string; width: number | null; height: number | null }
+	>,
+	categories: { id: string; singular?: string; title: string }[],
+	cook: string | null,
+): ViewRecipe {
+	const f = entry.fields;
+	const img = (id: number) => {
+		const i = images.get(id);
+		return i ? { url: i.url, width: i.width, height: i.height } : null;
+	};
+	const category = categories.find(c => c.id === String(f.category?.[0]));
+	return {
+		id: String(entry.id),
+		authorId: null,
+		title: entry.title,
+		category: category ? category.singular || category.title : null,
+		cook,
+		cookUrl: null,
+		source: sourceOf(f.source?.value),
+		rating: null,
+		serves: f.serves ?? 4,
+		totalTime: f.totalTime ?? null,
+		activeTime: f.activeTime ?? null,
+		image: f.image?.[0] != null ? img(f.image[0]) : null,
+		chapters: (f.chapters ?? []).map((c: any) => {
+			const steps: { html: string; images: any[] }[] = [];
+			for (const n of (c.fields?.steps?.content ?? []) as Node[]) {
+				if (n.type === 'paragraph') {
+					const html = paragraphHtml(n);
+					if (html) steps.push({ html, images: [] });
+				} else if (n.type === 'embed') {
+					const found = (n.attrs?.fields?.image ?? [])
+						.map(img)
+						.filter(Boolean);
+					if (!steps.length) steps.push({ html: '', images: [] });
+					steps[steps.length - 1].images.push(...found);
+				}
+			}
+			return {
+				title: c.fields?.title ?? '',
+				ingredients: c.fields?.ingredients ?? [],
+				steps,
+			};
+		}),
+	};
+}
+
 export function fromZipp(entry: any): ViewRecipe {
 	// the author is the cook while they are public (have a page) and
 	// have a name
@@ -93,6 +196,7 @@ export function fromZipp(entry: any): ViewRecipe {
 		category: entry.category?.[0]?.singular ?? null,
 		cook: cook?.name ?? null,
 		cookUrl: cook?.url ?? null,
+		source: sourceOf(entry.source?.url),
 		rating: entry.rating,
 		serves: entry.serves ?? 4,
 		totalTime: entry.totalTime,

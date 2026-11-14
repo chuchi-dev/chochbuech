@@ -32,6 +32,13 @@ export function staticRoutes(router) {
 			title: 'Edit Recipe',
 			recipeId: csr.getParam('id'),
 		}))
+		// a private recipe (unpublished, only its author sees it)
+		.add('/my-recipes/:id', csr => ({
+			sectionHandle: 'account',
+			typeHandle: 'myRecipe',
+			title: 'Private Recipe',
+			recipeId: csr.getParam('id'),
+		}))
 		// Make it your own: a new recipe from someone else's
 		.add('/recipes/copy/:id', csr => ({
 			sectionHandle: 'account',

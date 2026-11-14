@@ -9,7 +9,7 @@ use zipp_members::Members;
 use zipp_seo::{Seo, SeoDefaults, seo_field};
 
 /// The units of an ingredient's amount, `piece` shows the number alone.
-const UNITS: [(&str, &str); 10] = [
+pub const UNITS: [(&str, &str); 10] = [
 	("piece", "Pieces"),
 	("g", "Grams"),
 	("kg", "Kilograms"),
@@ -215,6 +215,11 @@ pub fn schema() -> Schema {
 							.unit("min")
 							.label("Time actively")
 							.width(25),
+						Field::link("source", [LinkKind::Url])
+							.without_label()
+							.instructions(
+								"The page of another site it is based on, shown small under the cook (Based on a recipe from …).",
+							),
 						Field::number("rating")
 							.range(0.0, 5.0)
 							.decimals(1)

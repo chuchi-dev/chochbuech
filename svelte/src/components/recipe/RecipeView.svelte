@@ -7,8 +7,9 @@
 
 	// a recipe page, of zipp or of the editor (see lib/recipe.ts for the
 	// shape): who, title, rating, the actions, the image, the ingredients
-	// and the steps
-	let { recipe } = $props();
+	// and the steps. `actions` false hides the favorite and change buttons
+	// (a private recipe isn't in the lists).
+	let { recipe, actions = true } = $props();
 
 	let img = $derived(recipe.image);
 	let times = $derived(
@@ -32,9 +33,21 @@
 			{#if recipe.cookUrl}
 				<a href={recipe.cookUrl}>{recipe.cook}</a>
 			{:else}
-				Anonymous
+				{recipe.cook ?? 'Anonymous'}
 			{/if}
 		</p>
+		{#if recipe.source}
+			<p class="source small">
+				Based on a recipe from
+				<a
+					href={recipe.source.url}
+					rel="nofollow noopener"
+					target="_blank"
+				>
+					{recipe.source.site}
+				</a>
+			</p>
+		{/if}
 		<h1 class="h1"><i>{recipe.title}</i></h1>
 		<Stars rating={recipe.rating} />
 		{#if times}
@@ -43,9 +56,11 @@
 	</header>
 
 	<div class="media wrap">
-		<div class="actions">
-			<Actions id={recipe.id} authorId={recipe.authorId} />
-		</div>
+		{#if actions}
+			<div class="actions">
+				<Actions id={recipe.id} authorId={recipe.authorId} />
+			</div>
+		{/if}
 		{#if img}
 			<img
 				src={img.url}
@@ -79,8 +94,15 @@
 		text-align: center;
 	}
 
-	.by a {
+	.by a,
+	.source a {
 		@include underline;
+	}
+
+	// right under the cook
+	.source {
+		margin-top: -0.75rem;
+		color: var(--accent-soft);
 	}
 
 	h1 {

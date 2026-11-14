@@ -1,6 +1,6 @@
 // the state of the recipe editor and its way to and from the fields of a
 // zipp recipe (lib/members.ts)
-import type { FieldError, MemberEntry } from '@/lib/members';
+import type { FieldError, ImportedRecipe, MemberEntry } from '@/lib/members';
 import { paragraphs } from '@/lib/recipe';
 
 export type TimeUnit = 'hours' | 'minutes';
@@ -44,6 +44,8 @@ export type Form = {
 	activeUnit: TimeUnit;
 	serves: number | null;
 	chapters: FormChapter[];
+	// the page of another site it is based on (an import)
+	source: string | null;
 };
 
 export type Errors = {
@@ -94,6 +96,7 @@ export function emptyForm(): Form {
 		activeUnit: 'minutes',
 		serves: 4,
 		chapters: [newChapter()],
+		source: null,
 	};
 }
 
@@ -171,6 +174,7 @@ export function fromEntry(e: MemberEntry, image: FormImage | null): Form {
 		...withUnits(f.totalTime ?? null, f.activeTime ?? null),
 		serves: f.serves ?? 4,
 		chapters: [],
+		source: f.source?.value ?? null,
 	};
 	const chapters = (f.chapters ?? []).map((b: any, i: number) =>
 		chapterToForm(
@@ -214,44 +218,62 @@ function plain(html: string): string {
 }
 
 /** Someone else's recipe (recipeForEdit.graphql) as the start of a new
- * one: the same image and step images, the text without its marks. */
+ * one: the text without its marks and the site it is based on, never
+ * their photos (the member adds their own to publish it). */
 export function fromGraphql(r: any): Form {
-	const img = r.image?.[0] ?? null;
 	const form: Form = {
 		title: r.title ?? '',
 		category: r.category?.[0]?.id ?? null,
-		image: img && {
-			id: Number(img.id),
-			url: img.url,
-			width: img.width,
-			height: img.height,
-		},
+		image: null,
 		...withUnits(r.totalTime ?? null, r.activeTime ?? null),
 		serves: r.serves ?? 4,
 		chapters: [],
+		source: r.source?.url ?? null,
 	};
 	const chapters = (r.chapters ?? []).map((c: any, i: number) => {
 		const nodes: Node[] = [];
 		for (const chunk of c.steps?.chunks ?? []) {
-			if (chunk.html !== undefined) {
-				for (const p of paragraphs(chunk.html)) {
-					const text = plain(p);
-					if (text) nodes.push(paragraph(text));
-				}
-			} else if (chunk.image?.length) {
-				nodes.push({
-					type: 'embed',
-					attrs: {
-						type: 'stepImage',
-						fields: {
-							image: chunk.image.map((a: any) => Number(a.id)),
-						},
-					},
-				});
+			if (chunk.html === undefined) continue;
+			for (const p of paragraphs(chunk.html)) {
+				const text = plain(p);
+				if (text) nodes.push(paragraph(text));
 			}
 		}
 		return chapterToForm(null, c.title, c.ingredients, nodes, i === 0);
 	});
+	return withChapters(form, chapters);
+}
+
+/** A recipe of another site (`importRecipe`) as a new one, without a
+ * photo: the member adds their own. `categories` are the site's, the
+ * import names them by slug. */
+export function fromImport(
+	r: ImportedRecipe,
+	categories: { id: string; slug: string }[],
+): Form {
+	const form: Form = {
+		title: r.title,
+		category: categories.find(c => c.slug === r.category)?.id ?? null,
+		image: null,
+		...withUnits(r.totalTime, r.activeTime),
+		serves: r.serves ?? 4,
+		chapters: [],
+		source: r.source,
+	};
+	const chapters = r.chapters.map((c, i) => ({
+		key: newKey(),
+		id: null,
+		title: c.title,
+		ingredients: c.ingredients.map(ing => ({
+			key: newKey(),
+			name: ing.name,
+			amount: ing.amount,
+			unit: ing.unit ?? '',
+		})),
+		text: c.steps.join('\n\n'),
+		nodes: [],
+		open: i === 0,
+	}));
 	return withChapters(form, chapters);
 }
 
@@ -347,10 +369,13 @@ function chapterBlocks(form: Form) {
 		});
 }
 
-export function validate(form: Form): Errors {
+/** What is missing to publish, or with `draft` to save it unpublished:
+ * a draft needs only its title. */
+export function validate(form: Form, draft = false): Errors {
 	const errors: Errors = {};
 	if (!form.title.trim()) errors.title = 'Please give your recipe a title.';
-	if (!form.image) errors.image = 'Please add a photo of your dish.';
+	if (draft) return errors;
+	if (!form.image) errors.image = 'Add your own photo to publish.';
 	if (!form.category) errors.category = 'Please choose a category.';
 	if (!form.serves || form.serves < 1)
 		errors.serves = 'For how many people is it?';
@@ -368,6 +393,7 @@ export function toFields(form: Form): Record<string, unknown> {
 		totalTime: toMinutes(form.total, form.totalUnit),
 		activeTime: toMinutes(form.active, form.activeUnit),
 		chapters: chapterBlocks(form),
+		source: form.source ? { type: 'url', value: form.source } : null,
 	};
 }
 
@@ -384,6 +410,13 @@ export function fieldErrors(list: FieldError[]): Errors {
 		chapters: 'chapters',
 	};
 	for (const e of list) {
+		// zipp's slugs are the titles, unique in the section (private
+		// recipes too)
+		if (e.path === 'slug' && e.message.includes('already used')) {
+			errors.title ??=
+				'There is already a recipe with this title, please give yours another one.';
+			continue;
+		}
 		const key = keys[e.path.split('.')[0]] ?? 'chapters';
 		errors[key] ??= e.message;
 	}

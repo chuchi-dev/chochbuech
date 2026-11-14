@@ -1,7 +1,8 @@
 // The recipes of members: zipp entries with the member as author, written
 // in the editor through zipp's plugin zipp-members (its docs/members.md).
 // The browser calls the routes of memberRoutes.js, which add the session
-// token. Everybody edits only the recipes they wrote, admins too.
+// token. Everybody edits only the recipes they wrote, admins too. An
+// unpublished recipe is a private one: only its author sees it.
 
 /** An entry as zipp-members gives it, with its draft if it has one. */
 export type MemberEntry = {
@@ -55,28 +56,75 @@ export function getEntry(id: string | number): Promise<MemberEntry> {
 	return call('GET', `/members/entries/${id}`);
 }
 
-/** A new recipe, live at once. */
+/** A new recipe, live at once when `published`, else private. */
 export function createRecipe(
 	title: string,
 	fields: Record<string, unknown>,
+	published: boolean,
 ): Promise<MemberEntry> {
 	return call('POST', '/members/entries', {
 		section: 'recipes',
 		type: 'recipe',
 		title,
 		fields,
-		published: true,
+		published,
 	});
 }
 
-/** Changes the fields it sends; `saved` is `draft` if the role may not
- * publish. */
+/** Changes the fields it sends and publishes or unpublishes it; `saved`
+ * is `draft` if the role may not publish. */
 export function updateEntry(
 	id: number,
 	title: string,
 	fields: Record<string, unknown>,
+	published: boolean,
 ): Promise<{ saved: 'live' | 'draft'; entry: MemberEntry }> {
-	return call('PUT', `/members/entries/${id}`, { title, fields });
+	return call('PUT', `/members/entries/${id}`, { title, fields, published });
+}
+
+/** A recipe of another site as the cms's import reads it (cms/src/import):
+ * nothing is saved, it fills the editor. */
+export type ImportedRecipe = {
+	title: string;
+	// the slug of a category
+	category: string | null;
+	serves: number | null;
+	// minutes
+	totalTime: number | null;
+	activeTime: number | null;
+	chapters: {
+		title: string;
+		ingredients: {
+			amount: number | null;
+			unit: string | null;
+			name: string;
+		}[];
+		steps: string[];
+	}[];
+	// the page it came from
+	source: string;
+};
+
+/** Reads the recipe of the page at `url`: the cms fetches that page and a
+ * model writes it in English and its own words. */
+export function importRecipe(url: string): Promise<ImportedRecipe> {
+	return call('POST', '/members/import', { url });
+}
+
+/** Publishes a recipe (zipp checks its photo and the other required
+ * fields) or makes it private again. */
+export function setPublished(
+	e: MemberEntry,
+	published: boolean,
+): Promise<{ saved: 'live' | 'draft'; entry: MemberEntry }> {
+	return updateEntry(e.id, e.title, {}, published);
+}
+
+/** The images of these ids, for a private recipe: GraphQL only has the
+ * live ones. */
+export async function getImages(ids: number[]): Promise<Uploaded[]> {
+	if (!ids.length) return [];
+	return call('GET', `/members/images?ids=${ids.join(',')}`);
 }
 
 export function deleteEntry(id: number): Promise<void> {
@@ -127,6 +175,14 @@ async function answer(resp: Response) {
 				? err.detail
 				: data?.message) || 'Something went wrong, try again.';
 	throw new MemberError(resp.status, message, fields);
+}
+
+/** What to tell the member when publishing failed. */
+export function publishError(e: unknown): string {
+	if (!(e instanceof MemberError) || !e.fields.length) return errorMessage(e);
+	return e.fields.some(f => f.path.startsWith('image'))
+		? 'Add your own photo to publish.'
+		: 'Please complete the recipe in the editor to publish it.';
 }
 
 /** What to tell the visitor about a failed request. */
