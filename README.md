@@ -54,8 +54,10 @@ website too) as well: on someone else's recipe everybody gets Make it
 your own. zipp would let admins edit all of them, the website doesn't.
 
 "Make it your own" on someone else's recipe (`/recipes/copy/<id>`)
-starts a new private recipe from it, without their photos. An admin
-creates the member in the studio.
+starts a new private recipe from it, without their photos. A title
+another recipe has (a private one too) gets `-2`, `-3` in its address,
+like an import of a recipe that is here already. An admin creates the
+member in the studio.
 
 "Import from a website" in the editor (`POST /members/import {url}`,
 `cms/src/import`) fetches that one page (public addresses only, no

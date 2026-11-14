@@ -1,8 +1,11 @@
 //! The images of a member's private recipes for the website: an entry of
-//! zipp-members names its images by id, GraphQL only has the images of
-//! live entries and no asset by id. It only answers the images a member
-//! uploaded and those of live entries (public anyway, like the photo of a
-//! recipe an admin made for them), never another member's private photo.
+//! zipp-members names its images by id. It only answers the images a
+//! member uploaded and those of live entries (public anyway, like the
+//! photo of a recipe an admin made for them), never another member's
+//! private photo. Not GraphQL's `assets(id:)`: crelte's server runs the
+//! queries for any visitor with the site's token, which reads every
+//! asset, so counting up the ids would give the urls of all private
+//! photos (the filename in the url is all that keeps them).
 
 use serde::{Deserialize, Serialize};
 use zipp::AppState;
@@ -79,8 +82,10 @@ async fn images(
 	Ok(Json(out))
 }
 
-/// Whether the user uploaded the asset or a live entry shows it. Not
-/// "in one of their entries": a member can put any id into their own.
+/// Whether the user uploaded the asset or a live entry shows it (published,
+/// in its post and expiry date, like zipp's `LIVE_DATES`). Not "in one of
+/// their entries": an entry keeps the links it had, also to a photo that
+/// was public then and isn't anymore.
 fn is_theirs(conn: &Connection, asset: i64, user: i64) -> Result<bool> {
 	let found = conn
 		.query_row(
@@ -89,7 +94,10 @@ fn is_theirs(conn: &Connection, asset: i64, user: i64) -> Result<bool> {
 				JOIN entry_sites s ON s.entry_id = r.entry_id AND s.site = r.site
 				JOIN entries e ON e.id = r.entry_id
 				WHERE r.asset_id = a.id AND s.published = 1
-				AND e.deleted_at IS NULL))",
+				AND e.deleted_at IS NULL AND (e.post_date IS NULL
+					OR e.post_date <= ROUND((julianday('now') - 2440587.5) * 86400000))
+				AND (e.expiry_date IS NULL
+					OR e.expiry_date > ROUND((julianday('now') - 2440587.5) * 86400000))))",
 			params![asset, user],
 			|_| Ok(()),
 		)
