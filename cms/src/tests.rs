@@ -620,6 +620,8 @@ async fn a_used_title_gets_a_number_and_photos_stay_their_own() {
 	let (status, err) = send(&lea, "PUT", &path, publish).await;
 	assert_eq!(status, 400, "{err}");
 	assert_eq!(err["error"]["detail"][0]["path"], "image", "{err}");
+	let message = err["error"]["detail"][0]["message"].as_str().unwrap();
+	assert!(message.contains("neither yours nor public"), "{err}");
 	assert_eq!(ts.graphql(RECIPES, json!({})).await["data"]["total"], 0);
 	// her own is
 	let resp = lea.upload("/members/assets", &[("dish.png", PNG)]).await;

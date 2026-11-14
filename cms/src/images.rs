@@ -84,7 +84,8 @@ async fn images(
 
 /// Whether the user uploaded the asset or a live entry shows it (published,
 /// in its post and expiry date, like zipp's `LIVE_DATES`). Not "in one of
-/// their entries": a member can put any id into their own.
+/// their entries": an entry keeps the links it had, also to a photo that
+/// was public then and isn't anymore.
 fn is_theirs(conn: &Connection, asset: i64, user: i64) -> Result<bool> {
 	let found = conn
 		.query_row(
