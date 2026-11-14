@@ -69,10 +69,13 @@ fn scripts(html: &str) -> impl Iterator<Item = &str> {
 }
 
 fn is_recipe(v: &Value) -> bool {
+	let recipe = |t: &Value| {
+		t.as_str()
+			.is_some_and(|t| t == "Recipe" || t.ends_with("/Recipe"))
+	};
 	match &v["@type"] {
-		Value::String(t) => t == "Recipe" || t.ends_with("/Recipe"),
-		Value::Array(ts) => ts.iter().any(|t| t == "Recipe"),
-		_ => false,
+		Value::Array(ts) => ts.iter().any(recipe),
+		t => recipe(t),
 	}
 }
 

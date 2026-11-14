@@ -113,22 +113,29 @@ pub async fn recipe_of(
 	llm: &dyn Llm,
 ) -> Result<Recipe> {
 	let source = extract::json_ld_recipe(&page.html);
-	let input = match &source {
-		Some(s) => {
-			let json = serde_json::to_string_pretty(s).unwrap_or_default();
-			let json = extract::truncate(&json, extract::MAX_TEXT * 2);
-			assistant::untrusted("The page's schema.org Recipe as JSON:", json)
+	let mut input = vec![];
+	if let Some(s) = &source {
+		let json = serde_json::to_string_pretty(s).unwrap_or_default();
+		let json = extract::truncate(&json, extract::MAX_TEXT * 2);
+		input.push(assistant::untrusted(
+			"The page's schema.org Recipe as JSON:",
+			json,
+		));
+	}
+	// many sites leave the ingredients or the steps out of their JSON-LD
+	if source
+		.as_ref()
+		.is_none_or(|s| s.ingredients.is_empty() || s.sections.is_empty())
+	{
+		let text = extract::main_text(&page.html);
+		if !text.trim().is_empty() {
+			input.push(assistant::untrusted("The page's text:", &text));
 		}
-		None => {
-			let text = extract::main_text(&page.html);
-			if text.trim().is_empty() {
-				return Err(assistant::no_recipe());
-			}
-			assistant::untrusted("The page's text:", &text)
-		}
-	};
-	let mut recipe =
-		assistant::ask(llm, TASK, None, vec![input], categories).await?;
+	}
+	if input.is_empty() {
+		return Err(assistant::no_recipe());
+	}
+	let mut recipe = assistant::ask(llm, TASK, None, input, categories).await?;
 	if let Some(s) = source {
 		recipe.serves = s.serves.or(recipe.serves);
 		recipe.total_time = s.total_time.or(recipe.total_time);

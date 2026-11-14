@@ -138,8 +138,11 @@ pub fn text(s: impl Into<String>) -> Value {
 
 /// A text block of data from outside, which the model only reads.
 pub fn untrusted(label: &str, data: &str) -> Value {
-	// nobody closes it early
-	let data = data.replace("</untrusted>", "");
+	// nobody closes it early, not with </UNTRUSTED > either
+	let mut data = data.to_string();
+	while let Some(i) = data.to_ascii_lowercase().find("untrusted") {
+		data.replace_range(i..i + "untrusted".len(), "");
+	}
 	text(format!("{label}\n<untrusted>\n{data}\n</untrusted>"))
 }
 

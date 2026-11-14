@@ -254,6 +254,8 @@ async fn members_import_a_recipe() {
 		"{asked}"
 	);
 	assert!(asked.contains("2 EL Bratbutter"), "{asked}");
+	// with its steps in the JSON-LD, not the text too
+	assert!(!asked.contains("The page's text:"), "{asked}");
 
 	// a page without JSON-LD: its text, the model's numbers
 	let plain = json!({ "url": "https://blog.example.com/plain" });
@@ -317,4 +319,20 @@ async fn without_a_key_there_is_no_import() {
 		err["message"].as_str().unwrap().contains("not configured"),
 		"{err}"
 	);
+}
+
+#[tokio::test]
+async fn json_ld_without_steps_comes_with_the_text() {
+	let llm = fake_llm(answer());
+	let html = r#"<script type="application/ld+json">
+		{"@type": ["Recipe"], "name": "Zopf", "recipeIngredient": ["500 g Mehl"]}
+		</script><main><p>Knead the dough for ten minutes.</p></main>"#;
+	let page = Page {
+		url: Url::parse("https://example.com/zopf").unwrap(),
+		html: html.into(),
+	};
+	recipe_of(&page, &[], llm.as_ref()).await.unwrap();
+	let asked = llm.last_text();
+	assert!(asked.contains("500 g Mehl"), "{asked}");
+	assert!(asked.contains("Knead the dough"), "{asked}");
 }

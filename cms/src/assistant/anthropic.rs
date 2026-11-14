@@ -46,7 +46,7 @@ impl Anthropic {
 pub fn body(model: &str, req: &LlmRequest) -> Value {
 	json!({
 		"model": model,
-		"max_tokens": 16000,
+		"max_tokens": 8000,
 		"system": req.system,
 		"messages": [{ "role": "user", "content": req.content }],
 		"output_config": {
