@@ -39,9 +39,11 @@
 		errorMessage,
 		forgetQueries,
 		getEntry,
+		getImages,
 		importRecipe,
 		updateEntry,
 	} from '@/lib/members';
+	import { sourceOf } from '@/lib/recipe';
 	import { getSession } from '@/lib/session.svelte';
 	import { getToasts } from '@/lib/toasts.svelte';
 
@@ -106,17 +108,24 @@
 			return;
 		}
 		getEntry(/** @type {string} */ (recipeId))
-			.then(e => {
+			.then(async e => {
 				const img = live?.image?.[0];
+				// a private one isn't in GraphQL: its photo by id
+				const [own] =
+					img || !e.fields.image?.length
+						? []
+						: await getImages(e.fields.image.slice(0, 1));
 				published = e.published;
 				form = fromEntry(
 					e,
-					img && {
-						id: Number(img.id),
-						url: img.url,
-						width: img.width,
-						height: img.height,
-					},
+					img
+						? {
+								id: Number(img.id),
+								url: img.url,
+								width: img.width,
+								height: img.height,
+							}
+						: (own ?? null),
 				);
 			})
 			.catch(e => {
@@ -145,18 +154,8 @@
 	let privateFirst = $derived(
 		!!copyOf || (!published && (editing || !!form?.source)),
 	);
-	// the site of an imported recipe, without www.
-	let sourceSite = $derived(siteOf(form?.source ?? null));
-
-	/** @param {string | null} url */
-	function siteOf(url) {
-		if (!url) return null;
-		try {
-			return new URL(url).hostname.replace(/^www\./, '');
-		} catch {
-			return null;
-		}
-	}
+	// the page of an imported recipe and its site
+	let source = $derived(sourceOf(form?.source));
 
 	/** Whether the member wrote something already. @param {Form} f */
 	function hasContent(f) {
@@ -411,16 +410,16 @@
 				</div>
 			{/if}
 
-			{#if sourceSite && form.source}
+			{#if source}
 				<p class="lead from">
 					Check the ingredients and the steps before you publish it,
 					it is based on a recipe from
 					<a
-						href={form.source}
+						href={source.url}
 						target="_blank"
 						rel="nofollow noopener"
 					>
-						{sourceSite}
+						{source.site}
 					</a>
 				</p>
 			{/if}

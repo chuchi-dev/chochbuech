@@ -177,6 +177,14 @@ async function answer(resp: Response) {
 	throw new MemberError(resp.status, message, fields);
 }
 
+/** What to tell the member when publishing failed. */
+export function publishError(e: unknown): string {
+	if (!(e instanceof MemberError) || !e.fields.length) return errorMessage(e);
+	return e.fields.some(f => f.path.startsWith('image'))
+		? 'Add your own photo to publish.'
+		: 'Please complete the recipe in the editor to publish it.';
+}
+
 /** What to tell the visitor about a failed request. */
 export function errorMessage(e: unknown): string {
 	if (e instanceof MemberError) return e.message;

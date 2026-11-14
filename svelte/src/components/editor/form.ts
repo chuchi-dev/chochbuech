@@ -218,8 +218,8 @@ function plain(html: string): string {
 }
 
 /** Someone else's recipe (recipeForEdit.graphql) as the start of a new
- * one: the text without its marks, never their photos (the member adds
- * their own to publish it). */
+ * one: the text without its marks and the site it is based on, never
+ * their photos (the member adds their own to publish it). */
 export function fromGraphql(r: any): Form {
 	const form: Form = {
 		title: r.title ?? '',
@@ -228,7 +228,7 @@ export function fromGraphql(r: any): Form {
 		...withUnits(r.totalTime ?? null, r.activeTime ?? null),
 		serves: r.serves ?? 4,
 		chapters: [],
-		source: null,
+		source: r.source?.url ?? null,
 	};
 	const chapters = (r.chapters ?? []).map((c: any, i: number) => {
 		const nodes: Node[] = [];
@@ -412,7 +412,7 @@ export function fieldErrors(list: FieldError[]): Errors {
 	for (const e of list) {
 		// zipp's slugs are the titles, unique in the section (private
 		// recipes too)
-		if (e.path === 'slug') {
+		if (e.path === 'slug' && e.message.includes('already used')) {
 			errors.title ??=
 				'There is already a recipe with this title, please give yours another one.';
 			continue;

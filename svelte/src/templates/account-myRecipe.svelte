@@ -10,6 +10,7 @@
 		forgetQueries,
 		getEntry,
 		getImages,
+		publishError,
 		setPublished,
 	} from '@/lib/members';
 	import { fromMember, imageIds } from '@/lib/recipe';
@@ -90,16 +91,7 @@
 				toasts.show('The recipe is private now, only you see it.');
 			}
 		} catch (err) {
-			const photo =
-				err instanceof MemberError &&
-				err.fields.some(f => f.path.startsWith('image'));
-			toasts.error(
-				photo
-					? 'Add your own photo to publish.'
-					: err instanceof MemberError && err.fields.length
-						? 'Please complete the recipe in the editor to publish it.'
-						: errorMessage(err),
-			);
+			toasts.error(publishError(err));
 		} finally {
 			busy = false;
 		}

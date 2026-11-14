@@ -12,6 +12,9 @@ query ($siteId: [QueryArgument], $id: [QueryArgument]) {
       serves
       totalTime
       activeTime
+      source {
+        url
+      }
       category {
         id
       }

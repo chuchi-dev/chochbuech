@@ -85,7 +85,7 @@ function zippSteps(chunks: any[] | undefined) {
 }
 
 /** The page an imported recipe is based on, only of another site. */
-function sourceOf(url: string | null | undefined) {
+export function sourceOf(url: string | null | undefined) {
 	if (!url) return null;
 	try {
 		const u = new URL(url);

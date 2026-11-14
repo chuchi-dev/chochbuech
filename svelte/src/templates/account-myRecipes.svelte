@@ -21,12 +21,12 @@
 	import Pills from '@/components/Pills.svelte';
 	import RoundArrow from '@/components/RoundArrow.svelte';
 	import {
-		MemberError,
 		deleteEntry,
 		errorMessage,
 		forgetQueries,
 		getImages,
 		listRecipes,
+		publishError,
 		setPublished,
 	} from '@/lib/members';
 	import { getSession } from '@/lib/session.svelte';
@@ -141,16 +141,7 @@
 			);
 			await load();
 		} catch (e) {
-			const photo =
-				e instanceof MemberError &&
-				e.fields.some(f => f.path.startsWith('image'));
-			toasts.error(
-				photo
-					? 'Add your own photo to publish.'
-					: e instanceof MemberError && e.fields.length
-						? 'Please complete the recipe in the editor to publish it.'
-						: errorMessage(e),
-			);
+			toasts.error(publishError(e));
 		} finally {
 			busy = false;
 		}
