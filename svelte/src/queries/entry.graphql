@@ -92,6 +92,10 @@ query ($uri: [String], $siteId: [QueryArgument]) {
       serves
       totalTime
       activeTime
+      # the page of another site it is based on (imported)
+      source {
+        url
+      }
       category {
         id
         title

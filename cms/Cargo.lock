@@ -466,8 +466,13 @@ dependencies = [
 name = "chochbuech-cms"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "reqwest",
+ "serde",
  "serde_json",
  "tokio",
+ "tracing",
+ "url",
  "zipp-cms",
  "zipp-members",
  "zipp-seo",
@@ -3652,8 +3657,7 @@ dependencies = [
 [[package]]
 name = "zipp-cms"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7d9a1535841c25debe407605330766e623cbb892f4ca7476ffe19975e1f67b4"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
 dependencies = [
  "async-graphql",
  "async-graphql-axum",
@@ -3689,8 +3693,7 @@ dependencies = [
 [[package]]
 name = "zipp-members"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f097b4d405d6a36e40dacc49243fc1efae6dc4bc3c7ff9f558fb947fcc9c0396"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
 dependencies = [
  "serde",
  "serde_json",
@@ -3700,8 +3703,7 @@ dependencies = [
 [[package]]
 name = "zipp-seo"
 version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1595e1a987b4d78fb623732e69f9efc524c981f68cf11085e6c0dd6d63158be4"
+source = "git+https://github.com/zipp-cms/zipp-next?branch=main#b20d735032b54f16769a93d57adfcd2fe2c724db"
 dependencies = [
  "serde",
  "serde_json",

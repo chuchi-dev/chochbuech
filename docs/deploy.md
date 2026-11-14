@@ -58,6 +58,17 @@ runs the same way.
    ```
 
    Both mode 600, owned by the group's user.
+
+   The recipe assistant (the editor's Import from a website) needs an
+   Anthropic API key: `shared/cms/data/anthropic-key` (mode 600, the
+   group's user) and in `shared/cms/.env`
+   `CHOCHBUECH_ANTHROPIC_KEY_FILE=data/anthropic-key` (relative to
+   `current/cms`, whose `data` is the shared one). `CHOCHBUECH_IMPORT_MODEL`
+   picks the model (`claude-haiku-5-5` without it, `claude-sonnet-5-5`
+   writes better and costs more). Without a key the import answers
+   "The import is not configured"; the rest of the site works. The cms
+   fetches the pages members import itself, so it needs outgoing
+   http(s).
 4. Mail (the password reset and invite mails): a send-only address
    `noreply@chochbuech.com` (`genco mail add-domain chochbuech.com
    --group chochbuech --send-only`, `genco mail send-only add

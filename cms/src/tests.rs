@@ -143,7 +143,7 @@ async fn the_list_searches_and_filters_by_category() {
 	// the card's "by" links to her page, Anonymous without an author
 	assert_eq!(card["author"]["name"], "Léa Linster");
 	let url = card["author"]["url"].as_str().unwrap();
-	assert!(url.ends_with("/cooks/léa-linster"), "{url}");
+	assert!(url.ends_with("/cooks/lea-linster"), "{url}");
 	let drinks_only = ts
 		.graphql(RECIPES, json!({ "category": [drinks.to_string()] }))
 		.await;
@@ -200,14 +200,14 @@ async fn the_cooks_are_the_members_with_a_live_recipe() {
 		json!({ "fields": { "bio": "Fish on Fridays.", "memberSince": 2024 } });
 	let (status, me) = send(&lea, "PUT", "/site-auth/me", profile).await;
 	assert_eq!(status, 200, "{me}");
-	assert_eq!(me["slug"], "léa-linster");
+	assert_eq!(me["slug"], "lea-linster");
 	assert_eq!(me["name"], "Léa Linster");
 	// the slug is an admin's
 	let slug = json!({ "slug": "lea" });
 	let (status, _) = send(&lea, "PUT", "/site-auth/me", slug).await;
 	assert_eq!(status, 400);
 
-	let vars = json!({ "slug": "léa-linster", "siteId": [1] });
+	let vars = json!({ "slug": "lea-linster", "siteId": [1] });
 	let page = ts.graphql(COOK, vars).await;
 	let cook = &page["data"]["cook"];
 	assert_eq!(cook["id"], lea_id.to_string(), "{page}");
@@ -239,7 +239,7 @@ async fn the_cooks_are_the_members_with_a_live_recipe() {
 	let (status, _) = send(&lea, "DELETE", &path, Value::Null).await;
 	assert_eq!(status, 200);
 	let page = ts
-		.graphql(COOK, json!({ "slug": "léa-linster", "siteId": [1] }))
+		.graphql(COOK, json!({ "slug": "lea-linster", "siteId": [1] }))
 		.await;
 	assert_eq!(page["data"]["cook"], Value::Null, "{page}");
 }
@@ -259,6 +259,7 @@ async fn a_recipe_page_has_its_chapters() {
 	let fields = json!({
 		"category": [mains],
 		"serves": 4,
+		"source": { "type": "url", "value": "https://www.example.ch/rezepte/filet" },
 		"chapters": [
 			{ "type": "chapter", "fields": {
 				"ingredients": [
@@ -280,6 +281,10 @@ async fn a_recipe_page_has_its_chapters() {
 		.await;
 	let entry = &data["data"]["entry"];
 	assert_eq!(entry["serves"], 4.0);
+	assert_eq!(
+		entry["source"]["url"],
+		"https://www.example.ch/rezepte/filet"
+	);
 	let chapters = entry["chapters"].as_array().unwrap();
 	assert_eq!(chapters.len(), 2);
 	assert_eq!(chapters[0]["ingredients"][0]["unit"], "dl");
@@ -394,7 +399,7 @@ async fn members_write_their_own_recipes() {
 	let (status, entry) = send(&lea, "POST", "/members/entries", new).await;
 	assert_eq!(status, 200, "{entry}");
 	assert_eq!(entry["published"], true);
-	assert_eq!(entry["uri"], "recipes/sole-meunière");
+	assert_eq!(entry["uri"], "recipes/sole-meuniere");
 	let id = entry["id"].as_i64().unwrap();
 
 	// live at once, by her
@@ -469,4 +474,90 @@ async fn members_write_their_own_recipes() {
 	let list = ts.graphql(RECIPES, json!({})).await;
 	assert_eq!(list["data"]["total"], 1);
 	assert_eq!(list["data"]["recipes"][0]["title"], "Rösti with egg");
+}
+
+#[tokio::test]
+async fn private_recipes_are_only_their_authors() {
+	let ts = TestServer::new(schema()).routes(crate::images::routes());
+	let mains = create(
+		&ts.admin(),
+		"categories",
+		"category",
+		"Main Courses",
+		json!({ "singular": "Main Course" }),
+	)
+	.await;
+	let (lea, _) = member(&ts, "Léa Linster").await;
+	// private: without a photo and a category, like an import
+	let new = json!({
+		"section": "recipes",
+		"type": "recipe",
+		"title": "Rösti",
+		"fields": {
+			"serves": 2,
+			"chapters": [{ "type": "chapter", "fields": {
+				"ingredients": [{ "amount": 600, "unit": "g", "name": "Potatoes" }],
+				"steps": steps(&["Grate the potatoes."]),
+			} }],
+		},
+		"published": false,
+	});
+	let (status, entry) = send(&lea, "POST", "/members/entries", new).await;
+	assert_eq!(status, 200, "{entry}");
+	assert_eq!(entry["published"], false);
+	let path = format!("/members/entries/{}", entry["id"]);
+
+	// not on the website, but in their list
+	let list = ts.graphql(RECIPES, json!({})).await;
+	assert_eq!(list["data"]["total"], 0, "{list}");
+	let (_, mine) =
+		send(&lea, "GET", "/members/entries?section=recipes", Value::Null)
+			.await;
+	assert_eq!(mine["entries"][0]["published"], false, "{mine}");
+	let mario = ts.site_user(Some("member"));
+	let (status, _) = send(&mario, "GET", &path, Value::Null).await;
+	assert_eq!(status, 403);
+
+	// publishing needs the photo
+	let publish = json!({ "title": "Rösti", "fields": {}, "published": true });
+	let (status, err) = send(&lea, "PUT", &path, publish.clone()).await;
+	assert_eq!(status, 400, "{err}");
+	let paths: Vec<_> = err["error"]["detail"]
+		.as_array()
+		.unwrap()
+		.iter()
+		.map(|e| e["path"].as_str().unwrap())
+		.collect();
+	assert!(paths.contains(&"image"), "{err}");
+
+	// their own photo, still private; the private page gets it by id
+	let resp = lea.upload("/members/assets", &[("dish.png", PNG)]).await;
+	let image: Value = Client::json(resp).await.unwrap();
+	let image = image["id"].as_i64().unwrap();
+	let fields = json!({ "category": [mains], "image": [image] });
+	let change =
+		json!({ "title": "Rösti", "fields": fields, "published": false });
+	let (status, saved) = send(&lea, "PUT", &path, change).await;
+	assert_eq!(status, 200, "{saved}");
+	assert_eq!(saved["entry"]["published"], false, "{saved}");
+	let images = format!("/members/images?ids={image},999999");
+	let resp = lea.get(&images).await;
+	let found: Value = Client::json(resp).await.unwrap();
+	assert_eq!(found.as_array().unwrap().len(), 1, "{found}");
+	assert_eq!(found[0]["id"], image);
+	assert!(
+		found[0]["url"].as_str().unwrap().contains("/assets/"),
+		"{found}"
+	);
+	assert_eq!(ts.visitor(None).get(&images).await.status().as_u16(), 401);
+
+	// published, then private again
+	let (status, saved) = send(&lea, "PUT", &path, publish).await;
+	assert_eq!((status, &saved["saved"]), (200, &json!("live")), "{saved}");
+	assert_eq!(ts.graphql(RECIPES, json!({})).await["data"]["total"], 1);
+	let private = json!({ "title": "Rösti", "fields": {}, "published": false });
+	let (status, saved) = send(&lea, "PUT", &path, private).await;
+	assert_eq!(status, 200, "{saved}");
+	assert_eq!(saved["entry"]["published"], false, "{saved}");
+	assert_eq!(ts.graphql(RECIPES, json!({})).await["data"]["total"], 0);
 }

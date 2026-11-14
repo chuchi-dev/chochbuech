@@ -28,6 +28,7 @@
 		fieldErrors,
 		fromEntry,
 		fromGraphql,
+		fromImport,
 		newChapter,
 		toFields,
 		validate,
@@ -38,6 +39,7 @@
 		errorMessage,
 		forgetQueries,
 		getEntry,
+		importRecipe,
 		updateEntry,
 	} from '@/lib/members';
 	import { getSession } from '@/lib/session.svelte';
@@ -81,8 +83,16 @@
 	/** @type {Errors} */
 	let refused = $state({});
 	let tried = $state(false);
+	// a private save checks only the title
+	let triedPrivate = $state(false);
 	let saving = $state(false);
 	let started = false;
+	// whether the recipe is live; a private one (unpublished) only its
+	// author sees
+	let published = $state(false);
+	// the address of another site's recipe to import
+	let importUrl = $state('');
+	let importing = $state(false);
 
 	// the fields of the recipe to change
 	$effect(() => {
@@ -98,6 +108,7 @@
 		getEntry(/** @type {string} */ (recipeId))
 			.then(e => {
 				const img = live?.image?.[0];
+				published = e.published;
 				form = fromEntry(
 					e,
 					img && {
@@ -119,7 +130,7 @@
 
 	// once tried, the errors follow the input
 	$effect(() => {
-		if (tried && form) errors = validate(form);
+		if (tried && form) errors = validate(form, triedPrivate);
 	});
 
 	let shown = $derived({ ...refused, ...errors });
@@ -127,7 +138,70 @@
 	let signInUrl = $derived(
 		'/sign-in?next=' + encodeURIComponent($route.url.pathname),
 	);
-	let cancelUrl = $derived(live?.url ?? '/account');
+	let cancelUrl = $derived(
+		live?.url ?? (editing ? `/my-recipes/${recipeId}` : '/account'),
+	);
+	// copies and imports start private, private ones stay so
+	let privateFirst = $derived(
+		!!copyOf || (!published && (editing || !!form?.source)),
+	);
+	// the site of an imported recipe, without www.
+	let sourceSite = $derived(siteOf(form?.source ?? null));
+
+	/** @param {string | null} url */
+	function siteOf(url) {
+		if (!url) return null;
+		try {
+			return new URL(url).hostname.replace(/^www\./, '');
+		} catch {
+			return null;
+		}
+	}
+
+	/** Whether the member wrote something already. @param {Form} f */
+	function hasContent(f) {
+		return (
+			!!f.title.trim() ||
+			f.chapters.some(
+				c => c.text.trim() || c.ingredients.some(i => i.name.trim()),
+			)
+		);
+	}
+
+	/** Fills the form with the recipe of another site, unsaved. */
+	async function runImport() {
+		let url = importUrl.trim();
+		if (!form || importing || !url) return;
+		if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+		if (
+			hasContent(form) &&
+			!confirm('Replace what you have written with the imported recipe?')
+		)
+			return;
+		importing = true;
+		try {
+			const r = await importRecipe(url);
+			form = fromImport(r, $categories ?? []);
+			tried = false;
+			errors = {};
+			refused = {};
+			importUrl = '';
+			toasts.show(
+				'The recipe is imported: check it and add your own photo.',
+			);
+		} catch (err) {
+			toasts.error(errorMessage(err));
+		} finally {
+			importing = false;
+		}
+	}
+
+	/** Enter imports instead of saving the recipe. @param {KeyboardEvent} e */
+	function importKey(e) {
+		if (e.key !== 'Enter') return;
+		e.preventDefault();
+		runImport();
+	}
 
 	/** @param {number} i @param {-1 | 1} dir */
 	function moveChapter(i, dir) {
@@ -157,19 +231,28 @@
 		form.chapters.push(newChapter());
 	}
 
-	/** The path of a recipe's page, of the site's url. @param {any} e */
+	/** The path of a recipe's page, of the site's url; a private one's of
+	 * its author. @param {any} e */
 	function pathOf(e) {
-		if (!e.published || !e.uri) return '/account';
+		if (!e.published) return `/my-recipes/${e.id}`;
+		if (!e.uri) return '/account';
 		return e.url ? new URL(e.url).pathname : '/' + e.uri;
 	}
 
-	/** @param {SubmitEvent} e */
-	async function save(e) {
+	/** Enter saves it the way of the main button. @param {SubmitEvent} e */
+	function submit(e) {
 		e.preventDefault();
+		save(privateFirst);
+	}
+
+	/** Saves it live, or with `asPrivate` unpublished: only its author
+	 * sees it. @param {boolean} asPrivate */
+	async function save(asPrivate) {
 		if (!form || saving) return;
 		tried = true;
+		triedPrivate = asPrivate;
 		refused = {};
-		errors = validate(form);
+		errors = validate(form, asPrivate);
 		const missing = [
 			errors.image && 'a photo',
 			errors.title && 'the title',
@@ -192,21 +275,33 @@
 		saving = true;
 		const snap = $state.snapshot(form);
 		const fields = toFields(snap);
+		const privateNote = published
+			? 'The recipe is private now, only you see it.'
+			: snap.image
+				? 'Saved privately, only you see it.'
+				: 'Saved privately, only you see it. Add your own photo to publish it.';
 		try {
+			const title = snap.title.trim();
 			if (editing) {
 				const id = Number(recipeId);
-				const r = await updateEntry(id, snap.title.trim(), fields);
+				const r = await updateEntry(id, title, fields, !asPrivate);
 				forgetQueries(crelte);
 				toasts.show(
-					r.saved === 'draft'
-						? 'Your changes are saved, an editor will publish them.'
-						: 'The recipe has been saved.',
+					asPrivate
+						? privateNote
+						: r.saved === 'draft'
+							? 'Your changes are saved, an editor will publish them.'
+							: published
+								? 'The recipe has been saved.'
+								: 'The recipe has been published.',
 				);
 				router.open(pathOf(r.entry));
 			} else {
-				const created = await createRecipe(snap.title.trim(), fields);
+				const created = await createRecipe(title, fields, !asPrivate);
 				forgetQueries(crelte);
-				toasts.show('The recipe has been published.');
+				toasts.show(
+					asPrivate ? privateNote : 'The recipe has been published.',
+				);
 				router.open(pathOf(created));
 			}
 		} catch (err) {
@@ -253,23 +348,88 @@
 		<p class="lead">Loading …</p>
 	</div>
 {:else}
-	<form class="editor" onsubmit={save} novalidate>
+	<form class="editor" onsubmit={submit} novalidate>
 		<div class="bar">
 			<div class="bar-inner">
 				<Button href={cancelUrl} look="secondary">Cancel</Button>
-				<Button type="submit" disabled={saving}>
-					{saving ? 'Saving …' : 'Save & Publish Recipe'}
-				</Button>
+				{#if !form.image}
+					<p class="need-photo small">
+						Add your own photo to publish
+					</p>
+				{/if}
+				<!-- the main button saves the way the recipe is meant: a
+				copy, an import or a private one privately -->
+				<div class="saves">
+					<Button
+						look="secondary"
+						disabled={saving}
+						onclick={() => save(!privateFirst)}
+					>
+						{privateFirst ? 'Publish' : 'Save privately'}
+					</Button>
+					<Button type="submit" disabled={saving}>
+						{saving
+							? 'Saving …'
+							: privateFirst
+								? 'Save privately'
+								: 'Publish'}
+					</Button>
+				</div>
 			</div>
 		</div>
 
 		<div class="content narrow">
 			<h1 class="h1">{title}</h1>
 
+			{#if !editing && !copyOf}
+				<div class="import">
+					<label for="import-url">Import from a website</label>
+					<p class="small hint">
+						The address of a recipe page: we read that one page and
+						write the recipe anew for you to check. Photos are not
+						imported, add your own.
+					</p>
+					<div class="import-row">
+						<input
+							id="import-url"
+							class="box"
+							type="url"
+							inputmode="url"
+							autocomplete="off"
+							placeholder="https://"
+							bind:value={importUrl}
+							onkeydown={importKey}
+							disabled={importing}
+						/>
+						<Button
+							disabled={importing || !importUrl.trim()}
+							onclick={runImport}
+						>
+							{importing ? 'Importing …' : 'Import'}
+						</Button>
+					</div>
+				</div>
+			{/if}
+
+			{#if sourceSite && form.source}
+				<p class="lead from">
+					Check the ingredients and the steps before you publish it,
+					it is based on a recipe from
+					<a
+						href={form.source}
+						target="_blank"
+						rel="nofollow noopener"
+					>
+						{sourceSite}
+					</a>
+				</p>
+			{/if}
+
 			{#if copyOf && live}
 				<p class="lead from">
 					Based on <a href={live.url}>{live.title}</a>
-					: change what you like, it becomes a recipe of yours.
+					: change what you like, it becomes a private recipe of yours.
+					Their photos stay theirs, add your own to publish it.
 				</p>
 			{/if}
 
@@ -407,6 +567,32 @@
 		flex-direction: column;
 	}
 
+	.import {
+		margin-top: 2rem;
+		padding: 1.25rem;
+		border: 1px dashed var(--accent-soft);
+
+		label {
+			display: block;
+		}
+	}
+
+	.hint {
+		margin-top: 0.5rem;
+		color: var(--accent-soft);
+	}
+
+	.import-row {
+		display: flex;
+		gap: 0.5rem;
+		margin-top: 1rem;
+
+		.box {
+			flex: 1;
+			min-width: 0;
+		}
+	}
+
 	// mobile: the buttons stick to the bottom of the screen until the end
 	// of the form
 	.bar {
@@ -420,9 +606,28 @@
 
 	.bar-inner {
 		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
 		justify-content: space-between;
 		gap: 0.5rem;
 		padding: 0.75rem var(--sx-body);
+	}
+
+	// mobile: the note and Cancel, then both saves on a line of their own
+	.saves {
+		display: flex;
+		width: 100%;
+		gap: 0.5rem;
+
+		> :global(*) {
+			flex: 1;
+		}
+	}
+
+	.need-photo {
+		flex: 1;
+		text-align: right;
+		color: var(--accent-soft);
 	}
 
 	// a flex item with auto margins would shrink to its content, so it
@@ -582,6 +787,23 @@
 		.bar-inner {
 			justify-content: flex-end;
 			gap: 1rem;
+		}
+
+		.need-photo {
+			flex: none;
+		}
+
+		.saves {
+			width: auto;
+			gap: 1rem;
+
+			> :global(*) {
+				flex: none;
+			}
+		}
+
+		.import {
+			padding: 2rem;
 		}
 
 		.fields {

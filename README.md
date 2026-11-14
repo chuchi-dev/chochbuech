@@ -39,8 +39,11 @@ one limit of wrong passwords), `--site-url` (the links of the mails) and
 ### Recipes of members
 
 A member's recipes are zipp entries with them as author, written in the
-editor (`/recipes/new`, `/recipes/edit/<id>`) and live at once, no
-review yet. The browser calls `/members/*` of the crelte server
+editor (`/recipes/new`, `/recipes/edit/<id>`): saved privately
+(unpublished, only they see it, on `/my-recipes/<id>`, its photos by id
+through the cms's `GET /members/images`) or published, live at once, no
+review yet. Publishing needs a photo of their own; My Recipes lists both
+with a filter, publishes and makes a recipe private again. The browser calls `/members/*` of the crelte server
 (`svelte/src/memberRoutes.js`, JSON from the site's own origin, the
 image upload as the only multipart request, up to 8 MB), which forwards
 to zipp's plugin zipp-members with the session's token: their recipes
@@ -51,8 +54,17 @@ website too) as well: on someone else's recipe everybody gets Make it
 your own. zipp would let admins edit all of them, the website doesn't.
 
 "Make it your own" on someone else's recipe (`/recipes/copy/<id>`)
-starts a new recipe from it, with its photo. An admin creates the member
-in the studio.
+starts a new private recipe from it, without their photos. An admin
+creates the member in the studio.
+
+"Import from a website" in the editor (`POST /members/import {url}`,
+`cms/src/import`) fetches that one page (public addresses only, no
+other pages, no images), reads its schema.org Recipe or its text and
+has the recipe assistant (`cms/src/assistant`, Claude on Anthropic's
+API) write it in English, the steps in its own words; the member checks
+it and saves it, privately at first. The recipe page names the page it
+is based on (the field `source`). 20 imports per member and hour; the
+key and the model are settings of the cms (docs/deploy.md).
 
 ### Cooks
 
