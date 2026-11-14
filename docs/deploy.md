@@ -2,7 +2,7 @@
 
 chochbuech.com runs on gs2 (s2.goodserver.ch), a server with the hosting
 panel [genco](https://github.com/chuchi-dev/genco): genco deploys the
-branch `zipp` with the steps of `genco.toml` and runs the cms and the
+branch `main` with the steps of `genco.toml` and runs the cms and the
 website as two apps of the group `chochbuech`. Changes on the server go
 through genco's agent (noah proposes, the operator approves); textrem
 runs the same way.
@@ -40,7 +40,7 @@ runs the same way.
 ## Setting it up
 
 1. Client Meier Labs, group `chochbuech`, repo
-   `git@github.com:chuchi-dev/chochbuech.git`, branch `zipp`. The group's
+   `git@github.com:chuchi-dev/chochbuech.git`, branch `main`. The group's
    deploy key goes to the GitHub repo (read only).
 2. The domains as in the table above (`genco domain add` with `--kind`,
    `--root`, `--command`, `--public`), certificates of Let's Encrypt.
@@ -106,6 +106,6 @@ knows) or leave them out of the package. Delete the archive afterwards.
 
 ## A new release
 
-Push to `zipp`, then `genco deploy chochbuech` (or the Deploy tab). A
+Merge into `main`, then `genco deploy chochbuech` (or the Deploy tab). A
 change of the schema needs a migration of its own (`cargo run --
 makemigration`) once the site is live, see AGENT.md.

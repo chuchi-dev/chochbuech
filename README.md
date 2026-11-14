@@ -91,7 +91,7 @@ cd svelte && npm install && npm run dev
 ### Deploy
 
 The site runs on a server with the hosting panel genco, which deploys the
-branch `zipp` with `genco.toml`: the cms on `admin.chochbuech.com`, the
+branch `main` with `genco.toml`: the cms on `admin.chochbuech.com`, the
 website on `chochbuech.com`. The setup, the settings (`cms/.env.example`,
 `craft/.env.example`), the first data and the backups are in
 [docs/deploy.md](docs/deploy.md).

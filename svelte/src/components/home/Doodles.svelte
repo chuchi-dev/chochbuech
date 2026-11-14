@@ -29,7 +29,7 @@
 		</span>
 		in this
 		<span class="note side">(chocolate)</span>
-		 cake.
+		cake.
 	</span>
 </span>
 

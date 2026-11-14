@@ -3,6 +3,16 @@
 Read `README.md` first. The backend is zipp (`cms/`), the website crelte
 (`svelte/`).
 
+## Branches
+
+`main` is what runs on chochbuech.com (genco deploys it, docs/deploy.md).
+Never commit to it directly: work on a branch from `origin/main` and open
+a pull request; a review merges it. The full checks before a merge:
+
+- `cd cms && cargo test && cargo run -- check --queries ../svelte/src/queries`
+  and `cargo run -- makemigration` leaves nothing pending,
+- `cd svelte && npm run check && npm run lint && npx prettier --check src`.
+
 ## The cms
 
 - `cms/src/content.rs` is the content model. The site is live (chochbuech.com
